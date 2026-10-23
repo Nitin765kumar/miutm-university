@@ -1,0 +1,59 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+<div class="admin-top">
+  <div><h1>Applications</h1><p>{{ total }} {{ 'result' if total == 1 else 'results' }}</p></div>
+  <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.export_csv', q=filters.q, status=filters.status, course=filters.course) }}">{{ icon('download') }}Export CSV</a>
+</div>
+
+<form class="toolbar" method="get" action="{{ url_for('admin.applications') }}">
+  <div class="field"><label for="q">Search</label><input class="input" id="q" name="q" value="{{ filters.q }}" placeholder="Name, number, phone or email" maxlength="60"></div>
+  <div class="field"><label for="st">Status</label>
+    <select class="select" id="st" name="status"><option value="">All</option>{% for s in statuses %}<option {% if s == filters.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="co">Programme</label>
+    <select class="select" id="co" name="course"><option value="">All</option>{% for c in courses %}<option value="{{ c.code }}" {% if c.code == filters.course %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+  <div class="btn-row"><button class="btn btn--navy" type="submit">Filter</button>{% if filters.q or filters.status or filters.course %}<a class="btn btn--ghost" href="{{ url_for('admin.applications') }}">Clear</a>{% endif %}</div>
+</form>
+
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead><tr><th>Application</th><th>Applicant</th><th>Programme</th><th>Marks</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        {% for a in rows %}
+        <tr>
+          <td><a href="{{ url_for('admin.application', admission_id=a.id) }}">{{ a.application_no }}</a><span class="sub">{{ a.created_at|ist }}</span></td>
+          <td>{{ a.full_name }}<span class="sub">{{ a.email }} &middot; {{ a.phone }}</span></td>
+          <td>{{ a.course_code }}</td>
+          <td>{{ a.percentage }}%</td>
+          <td>{{ badge(a.status) }}</td>
+          <td>
+            <div class="actions">
+              <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.application', admission_id=a.id) }}">{{ icon('eye') }}<span class="sr-only">View {{ a.application_no }}</span></a>
+              <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.edit_application', admission_id=a.id) }}">{{ icon('edit') }}<span class="sr-only">Edit {{ a.application_no }}</span></a>
+              {% if staff.role == 'admin' %}
+              <form method="post" action="{{ url_for('admin.delete_application', admission_id=a.id) }}" data-confirm="Delete application {{ a.application_no }} permanently? This cannot be undone.">
+                {{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ icon('trash') }}<span class="sr-only">Delete {{ a.application_no }}</span></button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="empty">No applications match. {% if filters.q or filters.status or filters.course %}<a href="{{ url_for('admin.applications') }}">Clear the filters</a>.{% endif %}</p>
+  {% endif %}
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.applications', page=page-1, q=filters.q, status=filters.status, course=filters.course) }}">Previous</a>{% else %}<span></span>{% endif %}
+    <span class="muted">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.applications', page=page+1, q=filters.q, status=filters.status, course=filters.course) }}">Next</a>{% else %}<span></span>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

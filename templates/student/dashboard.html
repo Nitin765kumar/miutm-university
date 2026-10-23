@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}My dashboard{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Hello, {{ me.full_name.split()[0] }}</h1><p>Your applications, documents and next steps in one place.</p></div></section>
+<section class="section"><div class="wrap">
+  {% include "student/_tabs.html" %}
+  <div class="dash">
+    <div>
+      <div class="dash-head">
+        <h2>My applications</h2>
+        {% if adm_state == 'open' and not draft %}<a class="btn btn--gold btn--sm" href="{{ url_for('apply') }}">New application</a>{% endif %}
+      </div>
+      {% if draft %}
+      <article class="draft-card">
+        <h3>Application in progress{% if draft.course %}: {{ draft.course }}{% endif %}</h3>
+        <p class="mb-0 small">Saved {{ draft.updated|ist }} &middot; {{ draft.files }} document{{ '' if draft.files == 1 else 's' }} saved. Not submitted yet.</p>
+        <div class="btn-row mt-md">
+          <a class="btn btn--gold btn--sm" href="{{ url_for('apply') }}">Continue application</a>
+          <form method="post" action="{{ url_for('apply_discard') }}" data-confirm="Discard this draft and its saved documents?">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Discard draft</button></form>
+        </div>
+      </article>
+      {% endif %}
+      {% for a in apps %}
+      <article class="appcard">
+        <div class="appcard-top">
+          <div><h3><a href="{{ url_for('student.application', application_no=a.application_no) }}">{{ a.course_name }}</a></h3>
+            <p class="muted mb-0">{{ a.application_no }} &middot; submitted {{ a.created_at|dmy }}</p></div>
+          {{ badge(a.status) }}
+        </div>
+        <p class="appcard-next">{{ status_next.get(a.status, '') }}</p>
+        {% set p = progress[a.id] %}
+        <p class="small muted">Documents: {{ p.uploaded }} of {{ p.need }} uploaded, {{ p.verified }} verified</p>
+        <meter min="0" max="{{ p.need }}" value="{{ p.uploaded }}" aria-label="Documents uploaded"></meter>
+        <div class="btn-row appcard-actions">
+          <a class="btn btn--navy btn--sm" href="{{ url_for('student.application', application_no=a.application_no) }}">Open</a>
+          <a class="btn btn--ghost btn--sm" href="{{ url_for('student.print_form', application_no=a.application_no) }}" target="_blank" rel="noopener">{{ icon('printer') }}Print form</a>
+          {% if a.status in ('Approved', 'Enrolled') %}<a class="btn btn--gold btn--sm" href="{{ url_for('student.offer_letter', application_no=a.application_no) }}" target="_blank" rel="noopener">{{ icon('download') }}Offer letter</a>{% endif %}
+        </div>
+      </article>
+      {% else %}
+      {% if not draft %}<div class="panel"><h3>No applications yet</h3>
+        <p>{% if adm_state == 'open' %}Start your first application. Your details will be filled in for you next time.{% else %}Applications are not open right now.{% endif %}</p>
+        <div class="btn-row">{% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}<a class="btn btn--ghost" href="{{ url_for('student.claim') }}">I applied earlier without an account</a></div></div>{% endif %}
+      {% endfor %}
+    </div>
+    <aside>
+      <div class="panel panel--paper">
+        <h2>Notices</h2>
+        <ul class="rows">{% for n in notices %}<li><strong>{{ n.title }}</strong><span>{{ n.published_on|dmy }}</span></li>{% else %}<li><span>No notices.</span></li>{% endfor %}</ul>
+        <p class="mb-0"><a href="{{ url_for('news') }}">All news and events</a></p>
+      </div>
+      <div class="panel panel--paper mt-md">
+        <h2>Need help?</h2>
+        <p>Questions about admission or a problem with the site?</p>
+        <p class="mb-0"><a href="{{ url_for('support') }}">Open a help ticket</a></p>
+      </div>
+    </aside>
+  </div>
+</div></section>
+{% endblock %}

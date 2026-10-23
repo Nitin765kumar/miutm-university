@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}Merit lists{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Merit lists</h1><p>Ranked by percentage, then by who applied first.</p></div></div>
+<form class="toolbar toolbar--simple" method="get" action="{{ url_for('admin.merit') }}">
+  <div class="field"><label for="course">Programme</label>
+    <select class="select" id="course" name="course">{% for c in courses %}<option value="{{ c.code }}" {% if c.code == code %}selected{% endif %}>{{ c.code }}: {{ c.name }}</option>{% endfor %}</select></div>
+  <div><button class="btn btn--navy" type="submit">Show</button></div>
+</form>
+<div class="stats">
+  <div class="stat"><strong>{{ seats }}</strong><span>Seats</span></div>
+  <div class="stat"><strong>{{ filled }}</strong><span>Filled (Approved + Enrolled)</span></div>
+  <div class="stat"><strong>{{ available }}</strong><span>Seats available</span></div>
+  <div class="stat"><strong>{{ waiting }}</strong><span>Awaiting a decision</span></div>
+</div>
+{% if staff.role == 'admin' %}
+<section class="card">
+  <h2>Run the merit list</h2>
+  <p>Approves the top {{ [available, waiting]|min }} of the {{ waiting }} applicants who are Pending or Under Review, in rank order, and puts the rest on the waiting list. Applicants are emailed if email is set up. Decisions you already made are not touched.</p>
+  <form method="post" action="{{ url_for('admin.merit_apply', code=code) }}" data-confirm="Approve the top applicants and waitlist the rest for {{ code }}?">
+    {{ csrf() }}<button class="btn btn--gold" type="submit" {% if not waiting %}disabled{% endif %}>Approve top {{ [available, waiting]|min }} and waitlist the rest</button>
+  </form>
+</section>
+{% endif %}
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Rank</th><th>Applicant</th><th>Marks</th><th>Category</th><th>Status</th></tr></thead>
+    <tbody>{% for r in rows %}<tr>
+      <td>{{ loop.index }}{% if loop.index <= seats %} <span class="muted small">within seats</span>{% endif %}</td>
+      <td><a href="{{ url_for('admin.application', admission_id=r.id) }}">{{ r.full_name }}</a><span class="sub">{{ r.application_no }}</span></td>
+      <td>{{ r.percentage }}%</td><td>{{ r.category or '-' }}</td><td>{{ badge(r.status) }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">No applications for this programme yet.</p>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,43 @@
+# Render blueprint. Commit this file, then choose "New > Blueprint" on Render.
+services:
+  - type: web
+    name: miutm-university
+    runtime: python
+    plan: free            # change to "starter" to attach a persistent disk (see below)
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --preload --workers 2 --threads 4 --timeout 60
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false        # you type it in the Render dashboard; it is never stored in git
+      - key: DEMO_MODE
+        value: "1"
+      - key: SESSION_DAYS
+        value: "90"
+      # Optional: require this code on the Admin register form
+      - key: STAFF_SIGNUP_CODE
+        sync: false
+      # Optional email (see README). Leave these out to run without email.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+    # SQLite needs a disk that survives restarts. Disks need a paid plan.
+    # Uncomment these lines and set the plan to "starter":
+    # disk:
+    #   name: miutm-data
+    #   mountPath: /var/data
+    #   sizeGB: 1
+    # and add this env var:
+    #   - key: DATABASE_PATH
+    #     value: /var/data/miutm.db

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Study computing, engineering and management{% endblock %}
+{% block description %}{{ stats.programmes }} programmes in computing, AI, cyber security, engineering and management in Ayodhya. Admissions for {{ cycle.session }} are {{ 'open' if adm_state == 'open' else 'coming soon' }}.{% endblock %}
+
+{% block content %}
+{% set closes = (timeline|selectattr('key', 'equalto', 'closes')|first).date %}
+{% set opens = (timeline|selectattr('key', 'equalto', 'opens')|first).date %}
+
+<section class="hero bgfx bg-lawn" aria-labelledby="hero-title">
+  <span class="bg-cap">Illustrative render</span>
+  <div class="wrap hero-grid">
+    <div>
+      <h1 id="hero-title">Study computing, engineering and management in Ayodhya.</h1>
+      <p class="lead">{{ stats.programmes }} programmes across {{ stats.schools }} schools, from six-month certificates to postgraduate degrees, built around projects you can show an employer.</p>
+      <div class="btn-row">
+        {% if adm_state == 'open' %}
+          <a class="btn btn--gold" href="{{ url_for('apply') }}">Apply for {{ cycle.session }} {{ icon('arrow') }}</a>
+        {% endif %}
+        <a class="btn btn--line" href="{{ url_for('programmes') }}">Browse programmes</a>
+      </div>
+      <p class="hero-note">
+        {{ icon('calendar') }}
+        {% if adm_state == 'open' %}
+          <span>Applications for {{ cycle.session }} close on {{ closes|dmy }}.</span>
+        {% elif adm_state == 'upcoming' %}
+          <span>Applications for {{ cycle.session }} open on {{ opens|dmy }}.</span>
+        {% else %}
+          <span>Applications for {{ cycle.session }} closed on {{ closes|dmy }}.</span>
+        {% endif %}
+      </p>
+    </div>
+
+      <div class="finder" data-finder>
+        <h2>Find a programme you can apply to</h2>
+        <fieldset class="js-only">
+          <legend>Where are you now?</legend>
+          <div class="seg">
+            <input type="radio" name="stage" id="st-12" value="12" checked><label for="st-12">Finishing 12th</label>
+            <input type="radio" name="stage" id="st-deg" value="degree"><label for="st-deg">I have a degree</label>
+            <input type="radio" name="stage" id="st-short" value="short"><label for="st-short">Short course</label>
+          </div>
+        </fieldset>
+        <fieldset class="js-only" data-sub="12">
+          <legend>Did your 12th include Mathematics?</legend>
+          <div class="seg">
+            <input type="radio" name="sub12" id="s12-m" value="m" checked><label for="s12-m">Yes</label>
+            <input type="radio" name="sub12" id="s12-o" value="o"><label for="s12-o">No</label>
+          </div>
+        </fieldset>
+        <fieldset class="js-only" data-sub="degree" hidden>
+          <legend>Your degree subject</legend>
+          <div class="seg">
+            <input type="radio" name="subdeg" id="sd-c" value="c" checked><label for="sd-c">Computer science or IT</label>
+            <input type="radio" name="subdeg" id="sd-o" value="o"><label for="sd-o">Another subject</label>
+          </div>
+        </fieldset>
+        <div class="finder-out">
+          <p class="finder-count" aria-live="polite">All programmes</p>
+          <ul class="finder-list">
+            {% for c in courses %}
+            <li data-aud="{{ c.audience }}">
+              <a href="{{ url_for('programme_detail', slug=c.slug) }}">
+                <strong>{{ c.name }}</strong>
+                <span>{{ c.duration }} &middot; {{ c.fee|inr }}{{ '/yr' if c.fee_period == 'per year' else ' total' }}</span>
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+          <p class="finder-empty" hidden>No programme matches. Try another option or <a href="{{ url_for('contact') }}">ask the admissions office</a>.</p>
+        </div>
+      </div>
+  </div>
+</section>
+
+<section class="section" id="dates" aria-labelledby="dates-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="dates-title">Admission dates for {{ cycle.session }}</h2>
+      <p>Five dates to remember. The next one is highlighted.</p>
+    </div>
+    <ol class="dates">
+      {% for m in timeline %}
+      <li data-state="{{ m.state }}">
+        {% if m.state == 'next' %}<span class="d-tag">Next</span>{% endif %}
+        <time datetime="{{ m.date.isoformat() }}">{{ m.date|dmy }}</time>
+        <span class="d-label">{{ m.label }}</span>
+        <span class="d-note">{{ m.note }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="section section--paper" aria-labelledby="schools-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="schools-title">Five schools, one campus</h2>
+      <p>Pick a school to see what it teaches, or open a programme for fees, seats and eligibility.</p>
+    </div>
+    <div class="schools">
+      {% for school, items in schools.items() %}
+      <div class="school">
+        <div>
+          <h3>{{ school }}</h3>
+          <p class="school-meta">{{ items|length }} {{ 'programme' if items|length == 1 else 'programmes' }} &middot; {{ items|sum(attribute='seats') }} seats</p>
+        </div>
+        <ul>
+          {% for c in items %}
+          <li><a href="{{ url_for('programme_detail', slug=c.slug) }}"><span>{{ c.name }}</span><small>{{ c.duration }}</small></a></li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="how-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="how-title">How admission works</h2>
+      <p>The whole process is online until counselling, when you bring your original documents.</p>
+    </div>
+    <ol class="steps">
+      <li><h3>Apply online</h3><p>Fill in the form in about ten minutes. You get an application number straight away.</p></li>
+      <li><h3>We check your details</h3><p>The admission office reviews your marks and eligibility. Follow progress on the tracker.</p></li>
+      <li><h3>Merit list</h3><p>Selected applicants appear in the merit list on the published date.</p></li>
+      <li><h3>Confirm your seat</h3><p>Attend counselling with original documents and pay the fee to confirm.</p></li>
+    </ol>
+    <div class="btn-row mt-lg">
+      {% if adm_state == 'open' %}<a class="btn btn--navy" href="{{ url_for('apply') }}">Start your application</a>{% endif %}
+      <a class="btn btn--ghost" href="{{ url_for('admission') }}">Read the full admission guide</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--paper" aria-labelledby="notices-title">
+  <div class="wrap">
+    <div class="section-head"><h2 id="notices-title">Notices</h2></div>
+    <ul class="notices">
+      {% for n in notices %}
+      <li class="notice">
+        <div><time datetime="{{ n.published_on }}">{{ n.published_on|dmy }}</time><span class="tag">{{ n.category }}</span></div>
+        <div><h3>{{ n.title }}</h3><p>{{ n.body }}</p></div>
+      </li>
+      {% else %}
+      <li class="notice"><div></div><p>No notices right now.</p></li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="campus-title">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="campus-title">On campus</h2>
+      <p>Libraries, labs, a hostel, sports grounds and a cafeteria, all within walking distance.</p>
+    </div>
+    <div class="gallery">
+      <figure class="g-main"><img src="{{ asset('img/campus-gate.webp') }}" width="1400" height="933" loading="lazy" alt="Main gate and administrative block"><figcaption>Main gate and administration</figcaption></figure>
+      <figure class="g-half"><img src="{{ asset('img/library.webp') }}" width="1000" height="666" loading="lazy" alt="Central digital library"><figcaption>Central digital library</figcaption></figure>
+      <figure class="g-half"><img src="{{ asset('img/lab.webp') }}" width="1000" height="666" loading="lazy" alt="Advanced computer lab"><figcaption>Advanced computer lab</figcaption></figure>
+      <figure class="g-quarter"><img src="{{ asset('img/hostel.webp') }}" width="1000" height="666" loading="lazy" alt="Student hostel"><figcaption>Student hostel</figcaption></figure>
+      <figure class="g-quarter"><img src="{{ asset('img/sports.webp') }}" width="1000" height="666" loading="lazy" alt="Sports ground"><figcaption>Sports ground</figcaption></figure>
+      <figure class="g-quarter"><img src="{{ asset('img/cafeteria.webp') }}" width="1000" height="666" loading="lazy" alt="Cafeteria"><figcaption>Cafeteria</figcaption></figure>
+      <figure class="g-quarter"><img src="{{ asset('img/auditorium.webp') }}" width="1000" height="666" loading="lazy" alt="Smart auditorium"><figcaption>Smart auditorium</figcaption></figure>
+    </div>
+    <p class="fine">Images are illustrative renders of the planned campus.</p>
+  </div>
+</section>
+
+<section class="cta on-dark" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div>
+      <h2 id="cta-title">{% if adm_state == 'open' %}Ready to apply?{% else %}Questions about admission?{% endif %}</h2>
+      <p>{% if adm_state == 'open' %}Applications for {{ cycle.session }} close on {{ closes|dmy }}. Already applied? Use your application number to see where you are.{% else %}The admissions office replies within two working days.{% endif %}</p>
+    </div>
+    <div class="btn-row">
+      {% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}
+      <a class="btn btn--line" href="{{ url_for('track') }}">Track application</a>
+      <a class="btn btn--line" href="{{ url_for('contact') }}">Contact us</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, csrf, honeypot %}
+{% block title %}Create student account{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Create your student account</h1><p>One place to apply, upload documents, track every application and download your offer letter.</p></div></section>
+<section class="section"><div class="wrap split">
+  <div>
+    {% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some answers need fixing. The fields are marked below.</span></div>{% endif %}
+    <form class="form panel" method="post" action="{{ url_for('student.register') }}">
+      {{ csrf() }}{{ honeypot() }}
+      <div class="form-grid">
+        {{ field('full_name', 'Full name', values, errors, span2=True, maxlength='80', autocomplete='name') }}
+        {{ field('email', 'Email address', values, errors, type='email', maxlength='120', autocomplete='email', hint='You will log in with this.') }}
+        {{ field('phone', 'Mobile number', values, errors, type='tel', required=False, optional_text=True, pattern='[6-9][0-9]{9}', maxlength='10', inputmode='numeric', title='10-digit mobile number') }}
+        {{ field('password', 'Password', {}, errors, type='password', minlength='8', autocomplete='new-password', hint='At least 8 characters with a letter and a number.') }}
+        {{ field('confirm', 'Repeat password', {}, errors, type='password', minlength='8', autocomplete='new-password') }}
+      </div>
+      <div><button class="btn btn--navy" type="submit" data-once>Create account</button></div>
+      <p class="small muted mb-0">Already registered? <a href="{{ url_for('student.login') }}">Log in</a>. By signing up you agree to the <a href="{{ url_for('terms') }}">terms</a> and <a href="{{ url_for('privacy') }}">privacy policy</a>.</p>
+    </form>
+  </div>
+  <div class="callout">
+    <p><strong>Applied already without an account?</strong></p>
+    <p>Create the account on the same device right after applying and it is linked automatically. Otherwise, sign up, then use <em>Add an earlier application</em> with your application number and date of birth.</p>
+  </div>
+</div></section>
+{% endblock %}

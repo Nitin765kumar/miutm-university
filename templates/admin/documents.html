@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}Documents{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Documents</h1><p>Uploaded by applicants. Check each one against the original at counselling too.</p></div></div>
+<div class="tabs" role="navigation" aria-label="Filter">
+  <a href="{{ url_for('admin.documents') }}" {% if show == 'waiting' %}aria-current="page"{% endif %}>To check</a>
+  <a href="{{ url_for('admin.documents', show='all') }}" {% if show != 'waiting' %}aria-current="page"{% endif %}>All</a>
+</div>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Document</th><th>Applicant</th><th>Uploaded</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>{% for d in rows %}<tr>
+      <td><strong>{{ d.doc_type }}</strong><span class="sub"><a href="{{ url_for('admin.download_document', doc_id=d.id) }}">{{ d.filename }}</a> ({{ [1, (d.size / 1024)|round|int]|max }} KB)</span></td>
+      <td><a href="{{ url_for('admin.application', admission_id=d.admission_id) }}">{{ d.full_name }}</a><span class="sub">{{ d.application_no }}</span></td>
+      <td>{{ d.uploaded_at|ist }}</td><td>{{ badge(d.status) }}</td>
+      <td><form class="actions" method="post" action="{{ url_for('admin.review_document', doc_id=d.id) }}">
+        {{ csrf() }}<input type="hidden" name="back" value="{{ url_for('admin.documents', show=show) }}">
+        <button class="btn btn--navy btn--sm" name="status" value="Verified" type="submit">Verify</button>
+        <button class="btn btn--ghost btn--sm" name="status" value="Rejected" type="submit">Reject</button></form></td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">{{ 'Nothing waiting to be checked.' if show == 'waiting' else 'No documents uploaded yet.' }}</p>{% endif %}
+</section>
+{% endblock %}

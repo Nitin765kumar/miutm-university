@@ -1,0 +1,7 @@
+{# Five-step progress bar. current = 1..5 #}
+<ol class="stepper" aria-label="Application progress">
+  {% set labels = [('Personal details', 1), ('Contact and address', 2), ('Education and programme', 3), ('Documents', 4), ('Review and submit', 5)] %}
+  {% for label, n in labels %}
+  <li data-state="{{ 'done' if n < current else 'current' if n == current else 'next' }}"{% if n == current %} aria-current="step"{% endif %}><small>Step {{ n }}</small>{{ label }}</li>
+  {% endfor %}
+</ol>

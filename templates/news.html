@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}News and events{% endblock %}
+{% block description %}Notices, upcoming events and announcements from {{ site.short }}.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-gate">
+  <div class="wrap"><h1>News and events</h1><p>Notices from the university and what is coming up on campus.</p></div>
+</section>
+
+<section class="section">
+  <div class="wrap split split--even">
+    <div>
+      <h2>Upcoming events</h2>
+      {% if upcoming %}
+      <ul class="events">
+        {% for e in upcoming %}
+        <li>
+          <div class="ev-date"><strong>{{ e.starts_on[8:10]|int }}</strong><span>{{ e.starts_on|mon_year }}</span></div>
+          <div>
+            <h3>{{ e.title }}</h3>
+            <p class="ev-meta">{{ e.starts_on|dmy }}{% if e.ends_on %} to {{ e.ends_on|dmy }}{% endif %}{% if e.location %} &middot; {{ e.location }}{% endif %}</p>
+            <p>{{ e.description }}</p>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">No events are scheduled right now.</p>{% endif %}
+      {% if past %}
+      <h3 class="mt-lg">Recent events</h3>
+      <ul class="rows">
+        {% for e in past %}<li><strong>{{ e.title }}</strong><span>{{ e.starts_on|dmy }}{% if e.location %} &middot; {{ e.location }}{% endif %}</span></li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+    <div>
+      <h2>Notices</h2>
+      <ul class="notices notices--tight">
+        {% for n in notices %}
+        <li class="notice">
+          <div><time datetime="{{ n.published_on }}">{{ n.published_on|dmy }}</time><span class="tag">{{ n.category }}</span></div>
+          <div><h3>{{ n.title }}</h3><p>{{ n.body }}</p></div>
+        </li>
+        {% else %}<li class="notice"><div></div><p>No notices right now.</p></li>{% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

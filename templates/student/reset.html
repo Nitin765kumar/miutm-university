@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, csrf %}
+{% block title %}Choose a new password{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Choose a new password</h1></div></section>
+<section class="section"><div class="wrap prose">
+  {% if bad %}
+    <div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>This link is invalid, expired or already used.</span></div>
+    <p><a href="{{ url_for('student.forgot') }}">Ask for a new link</a></p>
+  {% else %}
+    <form class="form panel" method="post">
+      {{ csrf() }}
+      {{ field('password', 'New password', {}, errors, type='password', minlength='8', autocomplete='new-password', hint='At least 8 characters with a letter and a number.') }}
+      {{ field('confirm', 'Repeat new password', {}, errors, type='password', minlength='8', autocomplete='new-password') }}
+      <div><button class="btn btn--navy" type="submit" data-once>Save password</button></div>
+    </form>
+  {% endif %}
+</div></section>
+{% endblock %}

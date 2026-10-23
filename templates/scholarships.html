@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Scholarships{% endblock %}
+{% block description %}Merit, sports, economically weaker section and girl-child scholarships at {{ site.short }}.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap"><h1>Scholarships</h1><p>Four routes to financial support. Most are decided from the application you already submit.</p></div>
+</section>
+<section class="section">
+  <div class="wrap">
+    <ul class="rows rows--wide">
+      {% for name, who, how in items %}
+      <li><strong>{{ name }}</strong><span>Who: {{ who }}</span><span>How to claim: {{ how }}</span></li>
+      {% endfor %}
+    </ul>
+    <div class="callout mt-lg">
+      <p><strong>Amounts and last dates</strong> are confirmed by the admissions office each session. Write to <a href="mailto:{{ departments[4].email }}">{{ departments[4].email }}</a> or use the <a href="{{ url_for('contact') }}">contact form</a> with your application number.</p>
+      {% if demo_mode %}<p>{{ site.demo_notice }}</p>{% endif %}
+    </div>
+    <div class="btn-row mt-lg">
+      {% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}
+      <a class="btn btn--ghost" href="{{ url_for('admission') }}">Admission guide</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

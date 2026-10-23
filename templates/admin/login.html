@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Staff sign in | {{ site.short }}</title>
+  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+  <script src="{{ asset('js/boot.js') }}"></script>
+</head>
+<body class="admin-body">
+{% from "partials/_macros.html" import icon, csrf %}
+<main class="login-wrap" id="main">
+  <div class="login-card">
+    <a class="brand" href="{{ url_for('index') }}">
+      <img src="{{ asset('img/logo-sm.webp') }}" width="52" height="52" alt="">
+      <span class="brand-text"><span class="brand-name">{{ site.short }}</span><span class="brand-sub">Staff area</span></span>
+    </a>
+    <h1>Sign in</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}<div class="alert alert--{{ category if category in ('success', 'danger', 'info') else 'info' }}">{{ icon('info') }}<span>{{ message }}</span></div>{% endfor %}
+    {% endwith %}
+    {% if error %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>{{ error }}</span></div>{% endif %}
+    <form class="form" method="post" action="{{ url_for('admin.login') }}">
+      {{ csrf() }}
+      <div class="field"><label for="u">Username</label><input class="input" id="u" name="username" autocomplete="username" required autofocus maxlength="60"></div>
+      <div class="field"><label for="p">Password</label><input class="input" id="p" name="password" type="password" autocomplete="current-password" required></div>
+      <div class="check check--inline"><input type="checkbox" id="remember" name="remember" value="1" checked><label for="remember">Keep me signed in until I sign out</label></div>
+      <button class="btn btn--navy" type="submit" data-once>Sign in</button>
+    </form>
+    <p class="small mt-md">New member of staff? <a href="{{ url_for('admin.register') }}">Register for admin access</a>. An administrator has to approve it.</p>
+    <p class="small muted mb-0"><a href="{{ url_for('index') }}">Back to the website</a> &middot; Too many failed attempts pause sign-in for a while.</p>
+  </div>
+</main>
+{% include "partials/_sprite.html" %}
+<script src="{{ asset('js/main.js') }}" defer></script>
+</body>
+</html>

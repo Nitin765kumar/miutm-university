@@ -1,0 +1,47 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Reports</h1><p>{{ total }} applications, {{ students }} student accounts.</p></div>
+  <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.export_csv') }}">{{ icon('download') }}Export all applications (CSV)</a></div>
+
+<section class="card">
+  <h2>Applications per day, last 30 days</h2>
+  <svg class="chart" viewBox="0 0 610 160" role="img" aria-label="Bar chart of applications per day over the last 30 days. Busiest day: {{ peak }}.">
+    <line x1="0" y1="130" x2="610" y2="130" class="chart-axis"/>
+    {% for b in bars %}
+      <rect class="chart-bar" x="{{ b.x }}" y="{{ b.y }}" width="14" height="{{ b.h }}" rx="2"><title>{{ b.label }}: {{ b.n }}</title></rect>
+    {% endfor %}
+    <text x="10" y="150" class="chart-label">{{ bars[0].label }}</text>
+    <text x="600" y="150" class="chart-label" text-anchor="end">{{ bars[-1].label }}</text>
+  </svg>
+  <p class="small muted">Busiest day: {{ peak if peak > 1 or bars|selectattr('n')|list else 0 }} {{ 'application' if peak == 1 else 'applications' }}. Hover a bar for its date.</p>
+</section>
+
+<div class="cols">
+  <section class="card">
+    <h2>By programme</h2>
+    <div class="table-wrap"><table class="table">
+      <thead><tr><th>Programme</th><th>Applied</th><th>Seats filled</th><th>Average marks</th></tr></thead>
+      <tbody>{% for c in per_course %}<tr><td><span title="{{ c.name }}">{{ c.code }}</span></td><td>{{ c.applied }}</td><td>{{ c.filled or 0 }} / {{ c.seats }}</td><td>{{ c.avg_pct if c.avg_pct is not none else '-' }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </section>
+  <section class="card">
+    <h2>By status</h2>
+    {% for s, n in status_counts.items() %}
+    <div class="meter-row"><span class="nm">{{ s }}</span><span class="vl">{{ n }}</span><meter min="0" max="{{ [total, 1]|max }}" value="{{ n }}" aria-label="{{ s }}: {{ n }}"></meter></div>
+    {% endfor %}
+  </section>
+</div>
+
+<div class="cols cols--even">
+  {% for title, items in (('Top states', states), ('Qualification', quals), ('Gender', genders), ('Category', categories)) %}
+  <section class="card">
+    <h2>{{ title }}</h2>
+    {% for r in items %}<div class="meter-row"><span class="nm">{{ r.k }}</span><span class="vl">{{ r.n }}</span><meter min="0" max="{{ [total, 1]|max }}" value="{{ r.n }}" aria-label="{{ r.k }}: {{ r.n }}"></meter></div>
+    {% else %}<p class="muted">No data yet.</p>{% endfor %}
+  </section>
+  {% endfor %}
+</div>
+{% if docs %}<section class="card"><h2>Documents</h2><p>{% for d in docs %}<span class="badge badge--{{ d.status|status_slug }}">{{ d.status }}: {{ d.n }}</span> {% endfor %}</p></section>{% endif %}
+{% endblock %}

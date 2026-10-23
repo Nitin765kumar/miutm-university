@@ -1,0 +1,78 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="admin-top">
+  <div><h1>Dashboard</h1><p>Admissions {{ cycle.session }} &middot; applications are <strong>{{ state }}</strong>.</p></div>
+  <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.reports') }}">{{ icon('calendar') }}Reports</a>
+</div>
+
+{% set todo = counts['Pending'] + docs_waiting + open_tickets + unread_count + staff_pending %}
+<section class="card card--attention">
+  <h2>{{ 'Needs your attention' if todo else 'All caught up' }}</h2>
+  <div class="todo">
+    <a href="{{ url_for('admin.applications', status='Pending') }}"><strong>{{ counts['Pending'] }}</strong> applications to review</a>
+    <a href="{{ url_for('admin.documents') }}"><strong>{{ docs_waiting }}</strong> documents to verify</a>
+    <a href="{{ url_for('admin.tickets') }}"><strong>{{ open_tickets }}</strong> open tickets</a>
+    <a href="{{ url_for('admin.messages', show='unread') }}"><strong>{{ unread_count }}</strong> unread messages</a>
+    {% if staff.role == 'admin' %}<a href="{{ url_for('admin.staff_list') }}"><strong>{{ staff_pending }}</strong> staff awaiting approval</a>{% endif %}
+    <span><strong>{{ drafts }}</strong> applications in progress</span>
+  </div>
+  {% if staff.role == 'admin' %}
+  <p class="quick">Quick actions:
+    <a href="{{ url_for('admin.settings_page') }}">Change admission dates</a> &middot;
+    <a href="{{ url_for('admin.content_new', kind='notices') }}">Post a notice</a> &middot;
+    <a href="{{ url_for('admin.content_new', kind='events') }}">Add an event</a> &middot;
+    <a href="{{ url_for('admin.merit') }}">Run a merit list</a> &middot;
+    <a href="{{ url_for('admin.staff_new') }}">Add staff</a></p>
+  {% endif %}
+</section>
+
+<div class="stats">
+  <a class="stat" href="{{ url_for('admin.applications') }}"><strong>{{ total }}</strong><span>All applications</span></a>
+  {% for s in ['Pending', 'Under Review', 'Approved', 'Waitlisted', 'Enrolled', 'Rejected', 'Cancelled'] %}
+  <a class="stat" href="{{ url_for('admin.applications', status=s) }}"><strong>{{ counts[s] }}</strong><span>{{ s }}</span></a>
+  {% endfor %}
+  <a class="stat" href="{{ url_for('admin.students') }}"><strong>{{ students }}</strong><span>Student accounts</span></a>
+  <a class="stat" href="{{ url_for('admin.messages', show='unread') }}"><strong>{{ unread_count }}</strong><span>Unread messages</span></a>
+  <a class="stat" href="{{ url_for('admin.tickets') }}"><strong>{{ open_tickets }}</strong><span>Open tickets</span></a>
+  <a class="stat" href="{{ url_for('admin.documents') }}"><strong>{{ docs_waiting }}</strong><span>Documents to check</span></a>
+</div>
+
+<div class="cols">
+  <div>
+    <section class="card">
+      <div class="card-head"><h2>Latest applications</h2><a href="{{ url_for('admin.applications') }}">View all</a></div>
+      {% if latest %}
+      <div class="table-wrap"><table class="table">
+        <thead><tr><th>Applicant</th><th>Programme</th><th>Status</th></tr></thead>
+        <tbody>{% for a in latest %}<tr>
+          <td><a href="{{ url_for('admin.application', admission_id=a.id) }}">{{ a.full_name }}</a><span class="sub">{{ a.application_no }} &middot; {{ a.created_at|ist }}</span></td>
+          <td>{{ a.course_code }}</td><td>{{ badge(a.status) }}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}<p class="empty">No applications yet.</p>{% endif %}
+    </section>
+    <section class="card">
+      <div class="card-head"><h2>Latest messages</h2><a href="{{ url_for('admin.messages') }}">View all</a></div>
+      {% for m in messages %}
+        <div class="msg {% if not m.is_read %}is-unread{% endif %}">
+          <div class="msg-head"><span class="msg-subject">{{ m.subject }}</span><span class="meta">{{ m.created_at|ist }}</span></div>
+          <span class="meta">{{ m.name }} &middot; {{ m.department }}</span>
+        </div>
+      {% else %}<p class="empty">No messages yet.</p>{% endfor %}
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Seats by programme</h2>
+    {% for c in by_course %}
+    <div class="meter-row">
+      <span class="nm" title="{{ c.name }}">{{ c.code }}</span>
+      <span class="vl">{{ c.filled or 0 }} of {{ c.seats }} seats filled &middot; {{ c.applied }} applied</span>
+      <meter min="0" max="{{ [c.seats, 1]|max }}" value="{{ [c.filled or 0, c.seats]|min }}" aria-label="{{ c.name }}: {{ c.filled or 0 }} of {{ c.seats }} seats filled"></meter>
+    </div>
+    {% endfor %}
+    <p class="small muted">Seats count Approved and Enrolled applications.</p>
+  </section>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Tickets{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Help and grievance tickets</h1><p>From the public help form.</p></div></div>
+<div class="tabs" role="navigation" aria-label="Filter">
+  <a href="{{ url_for('admin.tickets') }}" {% if status == 'active' %}aria-current="page"{% endif %}>Active</a>
+  {% for s in statuses %}<a href="{{ url_for('admin.tickets', status=s) }}" {% if status == s %}aria-current="page"{% endif %}>{{ s }}</a>{% endfor %}
+</div>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Ticket</th><th>From</th><th>Topic</th><th>Status</th></tr></thead>
+    <tbody>{% for t in rows %}<tr>
+      <td><a href="{{ url_for('admin.ticket', ticket_id=t.id) }}">{{ t.subject }}</a><span class="sub">{{ t.ticket_no }} &middot; {{ t.created_at|ist }}</span></td>
+      <td>{{ t.name }}<span class="sub">{{ t.email }}</span></td><td>{{ t.category }}</td>
+      <td><span class="badge badge--{{ 'approved' if t.status in ('Resolved', 'Closed') else 'under-review' if t.status == 'In progress' else 'pending' }}">{{ t.status }}</span></td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">No tickets here.</p>{% endif %}
+</section>
+{% endblock %}

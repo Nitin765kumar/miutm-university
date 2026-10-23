@@ -1,0 +1,6 @@
+<nav class="tabs tabs--student" aria-label="Student account">
+  <a href="{{ url_for('student.dashboard') }}" {% if endpoint == 'student.dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+  <a href="{{ url_for('student.claim') }}" {% if endpoint == 'student.claim' %}aria-current="page"{% endif %}>Add an earlier application</a>
+  <a href="{{ url_for('student.profile') }}" {% if endpoint == 'student.profile' %}aria-current="page"{% endif %}>Profile</a>
+  <a href="{{ url_for('student.password') }}" {% if endpoint == 'student.password' %}aria-current="page"{% endif %}>Password</a>
+</nav>

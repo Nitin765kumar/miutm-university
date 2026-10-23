@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.short }}{% endblock %} | {{ site.name }}</title>
+  <meta name="description" content="{% block description %}{{ site.tagline }} Programmes in computing, engineering, AI, cyber security and management.{% endblock %}">
+  <meta name="theme-color" content="#13294b">
+  {% if not allow_indexing %}<meta name="robots" content="noindex, nofollow">{% endif %}
+  <link rel="canonical" href="{{ request.base_url }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site.short }}">
+  <meta property="og:title" content="{{ self.title() }} | {{ site.short }}">
+  <meta property="og:description" content="{{ self.description()|trim }}">
+  <meta property="og:image" content="{{ request.url_root }}{{ asset('img/og-image.jpg')|trim('/') }}">
+  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+  <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+  <script src="{{ asset('js/boot.js') }}"></script>
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% from "partials/_macros.html" import icon, csrf %}
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="topbar on-dark">
+  <div class="wrap topbar-row">
+    <span class="topbar-note">{% if demo_mode %}{{ site.demo_notice }} <a href="{{ url_for('about') }}#about-project">About this project</a>{% else %}{{ site.name }}{% endif %}</span>
+    <span class="topbar-staff">
+      {% if staff_user %}
+        Staff: <a href="{{ url_for('admin.dashboard') }}">Dashboard</a>
+      {% else %}
+        <span class="topbar-label">Admin</span>
+        <a class="topbar-btn" href="{{ url_for('admin.login') }}">Login</a>
+        <a class="topbar-btn topbar-btn--solid" href="{{ url_for('admin.register') }}">Register</a>
+      {% endif %}
+    </span>
+  </div>
+</div>
+
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="{{ site.short }} home">
+      <img src="{{ asset('img/logo-sm.webp') }}" width="52" height="52" alt="">
+      <span class="brand-text">
+        <span class="brand-name">{{ site.short }}</span>
+        <span class="brand-sub">Maurya International University of Technology &amp; Management</span>
+      </span>
+    </a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Menu">
+      {{ icon('menu') }}
+    </button>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <a href="{{ url_for('index') }}" {% if endpoint == 'index' %}aria-current="page"{% endif %}>Home</a>
+      <a href="{{ url_for('about') }}" {% if endpoint == 'about' %}aria-current="page"{% endif %}>About</a>
+      <a href="{{ url_for('programmes') }}" {% if endpoint in ('programmes', 'programme_detail') %}aria-current="page"{% endif %}>Programmes</a>
+      <a href="{{ url_for('admission') }}" {% if endpoint in ('admission', 'apply', 'apply_success', 'track', 'scholarships') %}aria-current="page"{% endif %}>Admissions</a>
+      <a href="{{ url_for('news') }}" {% if endpoint == 'news' %}aria-current="page"{% endif %}>News</a>
+      <a href="{{ url_for('contact') }}" {% if endpoint in ('contact', 'support', 'support_done', 'support_track') %}aria-current="page"{% endif %}>Contact</a>
+      <span class="nav-auth">
+        {% if current_student or staff_user %}
+          {% if current_student %}<a class="btn btn--ghost btn--sm" href="{{ url_for('student.dashboard') }}">{{ icon('grid') }}My dashboard</a>{% endif %}
+          {% if staff_user %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.dashboard') }}">{{ icon('grid') }}Staff dashboard</a>{% endif %}
+          <form method="post" action="{{ url_for('logout_all') }}">{{ csrf() }}<button class="btn btn--line btn--sm" type="submit">Log out</button></form>
+        {% else %}
+          <a class="btn btn--ghost btn--sm" href="{{ url_for('student.login') }}">Log in</a>
+          <a class="btn btn--navy btn--sm" href="{{ url_for('student.register') }}">Sign up</a>
+        {% endif %}
+        {% if adm_state == 'open' %}<a class="btn btn--gold btn--sm" href="{{ url_for('apply') }}">Apply now</a>{% endif %}
+      </span>
+    </nav>
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="wrap flashes" role="status">
+  {% for category, message in messages %}
+  <div class="alert alert--{{ category if category in ('success', 'danger', 'info', 'warn') else 'info' }}">
+    {{ icon('check' if category == 'success' else 'alert' if category == 'danger' else 'info') }}<span>{{ message }}</span>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<main id="main">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer on-dark">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <img src="{{ asset('img/logo-sm.webp') }}" width="48" height="48" alt="">
+          <strong>{{ site.short }}</strong>
+        </div>
+        <p>{{ site.tagline }}</p>
+      </div>
+      <div>
+        <h2>Explore</h2>
+        <ul>
+          <li><a href="{{ url_for('about') }}">About</a></li>
+          <li><a href="{{ url_for('programmes') }}">Programmes</a></li>
+          <li><a href="{{ url_for('admission') }}">Admissions</a></li>
+          <li><a href="{{ url_for('track') }}">Track application</a></li>
+          <li><a href="{{ url_for('scholarships') }}">Scholarships</a></li>
+          <li><a href="{{ url_for('news') }}">News and events</a></li>
+          <li><a href="{{ url_for('support') }}">Help and grievances</a></li>
+          <li><a href="{{ url_for('contact') }}">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Accounts and policies</h2>
+        <ul>
+          <li><a href="{{ url_for('student.login') }}">Student login</a></li>
+          <li><a href="{{ url_for('student.register') }}">Create student account</a></li>
+          <li><a href="{{ url_for('admin.login') }}">Admin login</a></li>
+          <li><a href="{{ url_for('admin.register') }}">Admin register</a></li>
+          <li><a href="{{ url_for('search') }}">Search the site</a></li>
+          <li><a href="{{ url_for('privacy') }}">Privacy policy</a></li>
+          <li><a href="{{ url_for('terms') }}">Terms of use</a></li>
+          <li><a href="{{ url_for('accessibility') }}">Accessibility</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Contact</h2>
+        <address class="footer-contact">
+          <span>{{ icon('pin') }}<span>{{ site.address|join(', ') }}</span></span>
+          <span>{{ icon('phone') }}<a href="tel:{{ site.phone|replace(' ', '') }}">{{ site.phone }}</a></span>
+          <span>{{ icon('mail') }}<a href="mailto:{{ departments[0].email }}">{{ departments[0].email }}</a></span>
+          <span>{{ icon('clock') }}<span>{{ site.hours }}</span></span>
+        </address>
+      </div>
+    </div>
+    <div class="footer-base">
+      <span>&copy; {{ current_year }} {{ site.name }}.</span>
+      <ul>
+        <li>Built by <a href="{{ developer_links.GitHub }}" rel="noopener" target="_blank">Nitin Kumar</a></li>
+        <li><a href="{{ developer_links.LinkedIn }}" rel="noopener" target="_blank">LinkedIn</a></li>
+        <li><a href="{{ developer_links.YouTube }}" rel="noopener" target="_blank">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+{% include "partials/_sprite.html" %}
+<script src="{{ asset('js/main.js') }}" defer></script>
+</body>
+</html>

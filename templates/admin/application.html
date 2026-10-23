@@ -1,0 +1,103 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}{{ a.application_no }}{% endblock %}
+{% block content %}
+<div class="admin-top">
+  <div>
+    <h1>{{ a.full_name }}</h1>
+    <p>{{ a.application_no }} &middot; {{ badge(a.status) }} &middot; submitted {{ a.created_at|ist }}</p>
+  </div>
+  <div class="btn-row">
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.applications') }}">Back to list</a>
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.print_application', admission_id=a.id) }}" target="_blank" rel="noopener">{{ icon('printer') }}Print form</a>
+    {% if a.status in ('Approved', 'Enrolled') %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.offer_letter', admission_id=a.id) }}" target="_blank" rel="noopener">{{ icon('download') }}Offer letter</a>{% endif %}
+    <a class="btn btn--navy btn--sm" href="{{ url_for('admin.edit_application', admission_id=a.id) }}">{{ icon('edit') }}Edit details</a>
+    {% if staff.role == 'admin' %}
+    <form method="post" action="{{ url_for('admin.delete_application', admission_id=a.id) }}" data-confirm="Delete application {{ a.application_no }} permanently? This cannot be undone.">
+      {{ csrf() }}<button class="btn btn--danger btn--sm" type="submit">{{ icon('trash') }}Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="cols">
+  <div>
+    <section class="card">
+      <h2>Applicant</h2>
+      <dl class="kv">
+        <dt>Full name</dt><dd>{{ a.full_name }}</dd>
+        <dt>Father</dt><dd>{{ a.father_name }}</dd>
+        <dt>Mother</dt><dd>{{ a.mother_name }}</dd>
+        <dt>Date of birth</dt><dd>{{ a.dob|dmy }}</dd>
+        <dt>Gender</dt><dd>{{ a.gender }}</dd>
+        <dt>Category</dt><dd>{{ a.category or 'Not stated' }}</dd>
+        <dt>Nationality</dt><dd>{{ a.nationality }}</dd>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>Contact</h2>
+      <dl class="kv">
+        <dt>Email</dt><dd><a href="mailto:{{ a.email }}">{{ a.email }}</a></dd>
+        <dt>Mobile</dt><dd><a href="tel:{{ a.phone }}">{{ a.phone }}</a></dd>
+        <dt>Address</dt><dd>{{ a.address }}, {{ a.city }}, {{ a.state }} {{ a.pincode }}</dd>
+      </dl>
+    </section>
+    <section class="card">
+      <h2>Education and programme</h2>
+      <dl class="kv">
+        <dt>Programme</dt><dd>{{ a.course_name }} ({{ a.course_code }})</dd>
+        <dt>Seats</dt><dd>{{ filled }} of {{ seats }} filled <a href="{{ url_for('admin.merit', course=a.course_code) }}">(merit list)</a></dd>
+        <dt>Student account</dt><dd>{% if owner %}{{ owner.full_name }} ({{ owner.email }}){% else %}None, applied as a visitor{% endif %}</dd>
+        <dt>Qualification</dt><dd>{{ a.qualification }}</dd>
+        <dt>Percentage</dt><dd>{{ a.percentage }}%</dd>
+      </dl>
+    </section>
+  </div>
+
+  <div>
+    <section class="card">
+      <h2>Update status</h2>
+      <form class="form" method="post" action="{{ url_for('admin.update_status', admission_id=a.id) }}">
+        {{ csrf() }}
+        <div class="field"><label for="status">Status</label>
+          <select class="select" id="status" name="status">{% for s in statuses %}<option {% if s == a.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="note">Message to the applicant <span class="opt">(optional)</span></label>
+          <input class="input" id="note" name="note" maxlength="400" aria-describedby="note-h"><p class="hint" id="note-h">Shown on the public tracker.</p></div>
+        <div class="field"><label for="remarks">Internal remarks <span class="opt">(staff only)</span></label>
+          <textarea class="textarea" id="remarks" name="remarks" rows="3" maxlength="1000">{{ a.remarks or '' }}</textarea></div>
+        <div><button class="btn btn--navy" type="submit" data-once>Save status</button></div>
+      </form>
+    </section>
+    <section class="card" id="documents">
+      <h2>Documents</h2>
+      {% for d in docs %}
+      <div class="doc-admin">
+        <div><strong>{{ d.doc_type }}</strong> {{ badge(d.status) }}<br>
+          <a href="{{ url_for('admin.download_document', doc_id=d.id) }}">{{ d.filename }}</a> <span class="muted">({{ [1, (d.size / 1024)|round|int]|max }} KB, {{ d.uploaded_at|ist }})</span>
+          {% if d.note %}<br><span class="muted">Note: {{ d.note }}</span>{% endif %}</div>
+        <form class="doc-review" method="post" action="{{ url_for('admin.review_document', doc_id=d.id) }}">
+          {{ csrf() }}
+          <label class="sr-only" for="dn-{{ d.id }}">Note for {{ d.doc_type }}</label>
+          <input class="input" id="dn-{{ d.id }}" name="note" placeholder="Note (shown to student)" maxlength="200" value="{{ d.note or '' }}">
+          <div class="btn-row">
+            <button class="btn btn--navy btn--sm" name="status" value="Verified" type="submit">Verify</button>
+            <button class="btn btn--ghost btn--sm" name="status" value="Rejected" type="submit">Reject</button>
+          </div>
+        </form>
+      </div>
+      {% else %}<p class="muted">No documents uploaded.</p>{% endfor %}
+      {% set have = docs|map(attribute='doc_type')|list %}
+      {% set missing = required|reject('in', have)|list %}
+      {% if missing %}<p class="small"><strong>Still missing:</strong> {{ missing|join(', ') }}</p>{% endif %}
+    </section>
+    <section class="card">
+      <h2>History</h2>
+      <ol class="timeline">
+        {% for e in events %}
+        <li><time>{{ e.created_at|ist }}</time><strong>{{ e.status }}</strong>{% if e.note %}<p>{{ e.note }}</p>{% endif %}</li>
+        {% endfor %}
+      </ol>
+    </section>
+  </div>
+</div>
+{% endblock %}

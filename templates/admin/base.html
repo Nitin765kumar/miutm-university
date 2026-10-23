@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Staff{% endblock %} | {{ site.short }} staff area</title>
+  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+  <script src="{{ asset('js/boot.js') }}"></script>
+</head>
+<body class="admin-body">
+{% from "partials/_macros.html" import icon, csrf %}
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="admin">
+  <aside class="admin-side on-dark">
+    <a class="brand" href="{{ url_for('admin.dashboard') }}">
+      <img src="{{ asset('img/logo-sm.webp') }}" width="42" height="42" alt="">
+      <span class="brand-text"><span class="brand-name">{{ site.short }}</span><span class="brand-sub">Staff area</span></span>
+    </a>
+    <nav class="side-nav" aria-label="Staff">
+      <a href="{{ url_for('admin.dashboard') }}" {% if endpoint == 'admin.dashboard' %}aria-current="page"{% endif %}>{{ icon('grid') }}Dashboard</a>
+      <p class="side-group">Admissions</p>
+      <a href="{{ url_for('admin.applications') }}" {% if endpoint in ('admin.applications', 'admin.application', 'admin.edit_application') %}aria-current="page"{% endif %}>{{ icon('file') }}Applications</a>
+      <a href="{{ url_for('admin.merit') }}" {% if endpoint == 'admin.merit' %}aria-current="page"{% endif %}>{{ icon('check') }}Merit lists</a>
+      <a href="{{ url_for('admin.documents') }}" {% if endpoint == 'admin.documents' %}aria-current="page"{% endif %}>{{ icon('shield') }}Documents{% if docs_waiting %}<span class="count">{{ docs_waiting }}</span>{% endif %}</a>
+      <p class="side-group">Inbox</p>
+      <a href="{{ url_for('admin.messages') }}" {% if endpoint == 'admin.messages' %}aria-current="page"{% endif %}>{{ icon('inbox') }}Messages{% if unread_count %}<span class="count">{{ unread_count }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.tickets') }}" {% if endpoint in ('admin.tickets', 'admin.ticket') %}aria-current="page"{% endif %}>{{ icon('alert') }}Tickets{% if open_tickets %}<span class="count">{{ open_tickets }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.students') }}" {% if endpoint == 'admin.students' %}aria-current="page"{% endif %}>{{ icon('users') }}Students</a>
+      <p class="side-group">Insights</p>
+      <a href="{{ url_for('admin.reports') }}" {% if endpoint == 'admin.reports' %}aria-current="page"{% endif %}>{{ icon('calendar') }}Reports</a>
+      {% if staff.role == 'admin' %}
+      <p class="side-group">Manage</p>
+      <a href="{{ url_for('admin.content_index') }}" {% if endpoint.startswith('admin.content') %}aria-current="page"{% endif %}>{{ icon('edit') }}Website content</a>
+      <a href="{{ url_for('admin.settings_page') }}" {% if endpoint == 'admin.settings_page' %}aria-current="page"{% endif %}>{{ icon('clock') }}Site settings</a>
+      <a href="{{ url_for('admin.staff_list') }}" {% if endpoint.startswith('admin.staff') %}aria-current="page"{% endif %}>{{ icon('key') }}Staff accounts{% if staff_pending %}<span class="count">{{ staff_pending }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.activity') }}" {% if endpoint == 'admin.activity' %}aria-current="page"{% endif %}>{{ icon('clock') }}Activity log</a>
+      {% endif %}
+      <p class="side-group">You</p>
+      <a href="{{ url_for('admin.account') }}" {% if endpoint == 'admin.account' %}aria-current="page"{% endif %}>{{ icon('key') }}My profile</a>
+    </nav>
+    <div class="side-foot">
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('index') }}" target="_blank" rel="noopener">{{ icon('external') }}View website</a>
+      {% if staff.role == 'admin' %}
+      <form method="post" action="{{ url_for('admin.backup') }}" data-confirm="Download a full backup? It contains personal data and password hashes. Keep it safe.">
+        {{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ icon('download') }}Download backup</button>
+      </form>
+      {% endif %}
+      <form method="post" action="{{ url_for('admin.logout') }}">
+        {{ csrf() }}
+        <button class="btn btn--ghost btn--sm" type="submit">{{ icon('logout') }}Sign out ({{ session.get('admin_name') }})</button>
+      </form>
+    </div>
+  </aside>
+  <main class="admin-main" id="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert--{{ category if category in ('success', 'danger', 'info', 'warn') else 'info' }}" role="status">{{ icon('check' if category == 'success' else 'alert' if category == 'danger' else 'info') }}<span>{{ message }}</span></div>
+    {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+{% include "partials/_sprite.html" %}
+<script src="{{ asset('js/main.js') }}" defer></script>
+</body>
+</html>

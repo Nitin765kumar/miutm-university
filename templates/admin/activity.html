@@ -1,0 +1,21 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Activity log{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Activity log</h1><p>{{ total }} recorded actions. Newest first.</p></div></div>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>When</th><th>Who</th><th>Action</th><th>Target</th><th>Detail</th></tr></thead>
+    <tbody>{% for r in rows %}<tr><td class="nowrap">{{ r.created_at|ist }}</td><td>{{ r.actor }}<span class="sub">{{ r.role }}</span></td><td>{{ r.action }}</td><td>{{ r.target }}</td><td>{{ r.detail }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">Nothing recorded yet.</p>{% endif %}
+  {% if pages > 1 %}
+  <nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.activity', page=page-1) }}">Newer</a>{% else %}<span></span>{% endif %}
+    <span class="muted">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.activity', page=page+1) }}">Older</a>{% else %}<span></span>{% endif %}
+  </nav>
+  {% endif %}
+</section>
+{% endblock %}

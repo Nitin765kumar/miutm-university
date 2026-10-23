@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Application submitted{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-gate no-print">
+  <div class="wrap">
+    <h1>Application submitted</h1>
+    <p>Thank you, {{ a.full_name }}. We have received your application for {{ a.course_name }}.</p>
+  </div>
+</section>
+
+<section class="section no-print">
+  <div class="wrap prose">
+    <h2>Your application number</h2>
+    <div class="appno">
+      <strong id="appno">{{ a.application_no }}</strong>
+      <button class="btn btn--ghost btn--sm" type="button" data-copy="{{ a.application_no }}">{{ icon('copy') }}<span>Copy</span></button>
+    </div>
+    <p class="mt-md"><strong>Save this number.</strong> It is also on your dashboard, and you can track the application with it and your date of birth.{% if email_on %} We have emailed you a copy.{% else %} Email is not set up on this server, so no confirmation email is sent.{% endif %}</p>
+    <p class="mt-md"><a class="btn btn--gold" href="{{ url_for('student.application', application_no=a.application_no) }}">Go to this application</a></p>
+    <div class="btn-row mt-md">
+      <button class="btn btn--navy" type="button" data-print>{{ icon('printer') }}<span>Print application form</span></button>
+      <a class="btn btn--ghost" href="{{ url_for('student.dashboard') }}">My dashboard</a>
+      <a class="btn btn--ghost" href="{{ url_for('index') }}">Back to home</a>
+    </div>
+  </div>
+</section>
+
+<section class="section sheet-section">
+  <div class="wrap">
+    <div class="sheet-intro no-print">
+      <h2>Your complete application</h2>
+      <p class="muted">This is the full form you submitted. Print it, sign it and bring it to counselling. It prints on one A4 page.</p>
+    </div>
+    {% include "partials/_application_sheet.html" %}
+  </div>
+</section>
+
+<section class="section section--paper no-print">
+  <div class="wrap prose">
+    <h2>What happens next</h2>
+    <ol>
+      <li>The admission office reviews your details. Status starts as Pending.</li>
+      <li>Check progress on the tracker any time.</li>
+      <li>If you are approved, bring the signed printout and your original documents to counselling.</li>
+    </ol>
+  </div>
+</section>
+{% endblock %}

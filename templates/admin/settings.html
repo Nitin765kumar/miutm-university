@@ -1,0 +1,35 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, field, csrf %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Site settings</h1><p>Admission dates and contact details. Changes go live on every page as soon as you save.</p></div></div>
+{% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some fields need fixing. They are marked below.</span></div>{% endif %}
+<form class="form" method="post" action="{{ url_for('admin.settings_page') }}">
+  {{ csrf() }}
+  <section class="card">
+    <h2>Admission session</h2>
+    <div class="form-grid">
+      {{ field('session', 'Session label', values, errors, maxlength='12', hint='For example 2027-28. Shown across the site.') }}
+      <div class="field"><span class="label">Application form is</span>
+        <div class="check"><input type="checkbox" id="f-force" name="force_open" value="1" {% if values.get('force_open') == '1' %}checked{% endif %}><label for="f-force">Keep open even outside the dates (useful for testing)</label></div></div>
+      {% for key, label in date_keys %}
+        {{ field(key, label, values, errors, type='date') }}
+      {% endfor %}
+    </div>
+    <p class="small muted">Right now applications are <strong>{{ state }}</strong>. The form opens and closes on its own using the first two dates.</p>
+  </section>
+  <section class="card">
+    <h2>Contact details</h2>
+    <div class="form-grid">
+      {{ field('phone', 'Main phone', values, errors, type='tel', maxlength='25') }}
+      {{ field('phone_alt', 'Second phone', values, errors, type='tel', required=False, optional_text=True, maxlength='25') }}
+      {{ field('general_email', 'General email', values, errors, type='email', maxlength='120') }}
+      {{ field('hours', 'Office hours', values, errors, maxlength='80') }}
+      {{ field('address1', 'Address line 1', values, errors, maxlength='80', span2=True) }}
+      {{ field('address2', 'Address line 2', values, errors, required=False, optional_text=True, maxlength='80') }}
+      {{ field('address3', 'Address line 3', values, errors, required=False, optional_text=True, maxlength='80') }}
+    </div>
+  </section>
+  <div class="btn-row"><button class="btn btn--navy" type="submit" data-once>Save settings</button><a class="btn btn--ghost" href="{{ url_for('admin.dashboard') }}">Cancel</a></div>
+</form>
+{% endblock %}

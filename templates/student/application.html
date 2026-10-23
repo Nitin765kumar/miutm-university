@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}{{ a.application_no }}{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap">
+    <a class="back-link" href="{{ url_for('student.dashboard') }}">{{ icon('arrow', 'flip') }}Back to my dashboard</a>
+    <h1>{{ a.course_name }}</h1>
+    <p>{{ a.application_no }} &middot; submitted {{ a.created_at|ist }}</p>
+  </div>
+</section>
+<section class="section"><div class="wrap dash">
+  <div>
+    <div class="panel">
+      <p>{{ badge(a.status) }}</p>
+      <p>{{ status_help.get(a.status, '') }}</p>
+      <p class="appcard-next"><strong>Next:</strong> {{ status_next.get(a.status, '') }}</p>
+      <div class="btn-row">
+        {% if has_offer %}<a class="btn btn--gold" href="{{ url_for('student.offer_letter', application_no=a.application_no) }}" target="_blank" rel="noopener">{{ icon('download') }}Offer letter</a>{% endif %}
+        <a class="btn btn--ghost" href="{{ url_for('student.print_form', application_no=a.application_no) }}" target="_blank" rel="noopener">{{ icon('printer') }}Print application form</a>
+        {% if can_edit %}<a class="btn btn--ghost" href="{{ url_for('student.edit_application', application_no=a.application_no) }}">{{ icon('edit') }}Edit details</a>{% endif %}
+        {% if can_withdraw %}
+        <form method="post" action="{{ url_for('student.withdraw', application_no=a.application_no) }}" data-confirm="Withdraw this application? It will be cancelled and your place released.">
+          {{ csrf() }}<button class="btn btn--ghost" type="submit">Withdraw</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <h2 id="documents" class="mt-lg">Documents</h2>
+    <p class="muted">PDF, JPG or PNG, up to 2 MB each. The office checks every document before counselling.{% if not can_upload %} This application is closed, so uploads are switched off.{% endif %}</p>
+    <ul class="docs">
+      {% for kind in required + optional %}
+      {% set d = docs.get(kind) %}
+      <li class="doc">
+        <div class="doc-main">
+          <strong>{{ kind }}</strong> {% if kind in required %}<span class="req-tag">Required</span>{% else %}<span class="opt-tag">Optional</span>{% endif %}
+          {% if d %}
+            <p class="doc-file"><a href="{{ url_for('student.download_document', doc_id=d.id) }}">{{ d.filename }}</a> <span class="muted">({{ [1, (d.size / 1024)|round|int]|max }} KB)</span> {{ badge(d.status) }}</p>
+            {% if d.note %}<p class="doc-note">Office note: {{ d.note }}</p>{% endif %}
+          {% else %}<p class="muted mb-0">Not uploaded yet.</p>{% endif %}
+        </div>
+        {% if can_upload and not (d and d.status == 'Verified') %}
+        <form class="doc-form" method="post" enctype="multipart/form-data" action="{{ url_for('student.upload_document', application_no=a.application_no) }}">
+          {{ csrf() }}<input type="hidden" name="doc_type" value="{{ kind }}">
+          <label class="sr-only" for="file-{{ loop.index }}">Choose file for {{ kind }}</label>
+          <input class="input input--file" id="file-{{ loop.index }}" type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+          <button class="btn btn--navy btn--sm" type="submit" data-once>{{ 'Replace' if d else 'Upload' }}</button>
+        </form>
+        {% if d %}
+        <form method="post" action="{{ url_for('student.delete_document', application_no=a.application_no, doc_id=d.id) }}" data-confirm="Remove this document?">
+          {{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Remove</button>
+        </form>
+        {% endif %}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  <aside>
+    <div class="panel panel--paper">
+      <h2>History</h2>
+      <ol class="timeline">
+        {% for e in events %}<li><time>{{ e.created_at|ist }}</time><strong>{{ e.status }}</strong>{% if e.note %}<p>{{ e.note }}</p>{% endif %}</li>{% endfor %}
+      </ol>
+    </div>
+    <div class="panel panel--paper mt-md">
+      <h2>Details</h2>
+      <dl class="kv kv--small">
+        <dt>Applicant</dt><dd>{{ a.full_name }}</dd>
+        <dt>Qualification</dt><dd>{{ a.qualification }}, {{ a.percentage }}%</dd>
+        <dt>Contact</dt><dd>{{ a.email }}<br>{{ a.phone }}</dd>
+      </dl>
+    </div>
+  </aside>
+</div></section>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, field, select, textarea, csrf %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} {{ cfg.singular }}{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>{{ 'Edit' if editing else 'Add' }} {{ cfg.singular }}</h1><p><a href="{{ url_for('admin.content_list', kind=kind) }}">Back to {{ cfg.title|lower }}</a></p></div></div>
+{% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some fields need fixing. They are marked below.</span></div>{% endif %}
+<form class="form card" method="post" action="{{ url_for('admin.content_edit', kind=kind, rid=rid) if editing else url_for('admin.content_new', kind=kind) }}">
+  {{ csrf() }}
+  <div class="form-grid">
+    {% for f in cfg.fields %}
+      {% if f.type == 'bool' %}
+        <div class="field span-2"><div class="check"><input type="checkbox" id="f-{{ f.name }}" name="{{ f.name }}" value="1" {% if values.get(f.name) %}checked{% endif %}><label for="f-{{ f.name }}">{{ f.label }}</label></div></div>
+      {% elif f.get('readonly_on_edit') and editing %}
+        <div class="field"><span class="label">{{ f.label }}</span><p class="mb-0"><strong>{{ values.get(f.name) }}</strong></p><p class="hint">Cannot be changed.</p></div>
+      {% elif f.type == 'select' %}
+        {{ select(f.name, f.label, f.choices, values, errors, span2=f.get('span2', False), hint=f.get('hint')) }}
+      {% elif f.type == 'textarea' %}
+        {{ textarea(f.name, f.label, values, errors, required=f.get('required', True), rows=4, maxlength=f.get('max', 500), hint=f.get('hint')) }}
+      {% elif f.type == 'int' %}
+        {{ field(f.name, f.label, values, errors, type='number', required=f.get('required', True), span2=f.get('span2', False), hint=f.get('hint'), min=f.get('min', 0), max=f.get('max', 1000000)) }}
+      {% elif f.type == 'date' %}
+        {{ field(f.name, f.label, values, errors, type='date', required=f.get('required', True), span2=f.get('span2', False), hint=f.get('hint')) }}
+      {% else %}
+        {{ field(f.name, f.label, values, errors, required=f.get('required', True), span2=f.get('span2', False), hint=f.get('hint'), maxlength=f.get('max', 200)) }}
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="btn-row"><button class="btn btn--navy" type="submit" data-once>Save</button><a class="btn btn--ghost" href="{{ url_for('admin.content_list', kind=kind) }}">Cancel</a></div>
+</form>
+{% endblock %}

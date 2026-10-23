@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Privacy policy{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap"><h1>Privacy policy</h1><p>What we collect, why, and how long we keep it.</p></div></section>
+<section class="section"><div class="wrap prose">
+  {% if demo_mode %}<div class="callout"><p>This is a demonstration site. Please do not enter real personal data. Use sample values instead.</p></div>{% endif %}
+  <h2>What we collect</h2>
+  <p>When you apply, we ask for your name, parents' names, date of birth, gender, optional category, contact details, address, qualification, marks and chosen programme. When you write to us, we keep your name, email, optional phone number and message.</p>
+  <h2>Why we collect it</h2>
+  <p>Only to process your admission, answer your message and show your status on the tracker. We do not sell your data or use it for advertising.</p>
+  <h2>Who can see it</h2>
+  <p>Authorised admission and administration staff, after signing in. The tracker shows your status only to someone who knows both your application number and your date of birth, and it does not show your address, phone or email.</p>
+  <h2>How long we keep it</h2>
+  <p>Application records are kept while the admission cycle is active and for the period required by university rules. You can ask the admissions office to correct or delete your data.</p>
+  <h2>Cookies</h2>
+  <p>We use one essential session cookie to keep forms secure and to keep staff signed in. We do not use advertising or tracking cookies. Pages load fonts from Google Fonts.</p>
+  <h2>Contact</h2>
+  <p>Questions about your data: <a href="mailto:{{ departments[0].email }}">{{ departments[0].email }}</a>.</p>
+</div></section>
+{% endblock %}

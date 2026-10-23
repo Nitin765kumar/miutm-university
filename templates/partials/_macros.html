@@ -1,0 +1,67 @@
+{# Small building blocks shared by every template #}
+
+{% macro icon(name, cls='') -%}
+<svg class="icon {{ cls }}" aria-hidden="true" focusable="false"><use href="#i-{{ name }}"/></svg>
+{%- endmacro %}
+
+{% macro badge(status) -%}
+<span class="badge badge--{{ status|status_slug }}">{{ status }}</span>
+{%- endmacro %}
+
+{# A labelled input. Pass extra HTML attributes as keyword arguments, e.g. pattern="..." #}
+{% macro field(name, label, values, errors, type='text', required=True, hint=None, span2=False, optional_text=False) -%}
+{% set err = errors.get(name) %}
+<div class="field{% if span2 %} span-2{% endif %}"{% if err %} data-invalid{% endif %}>
+  <label for="f-{{ name }}">{{ label }}{% if required %}<span class="req" aria-hidden="true">*</span>{% elif optional_text %} <span class="opt">(optional)</span>{% endif %}</label>
+  <input class="input" id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values.get(name, '') }}"
+         {%- if required %} required{% endif %}
+         {%- if err %} aria-invalid="true" aria-describedby="e-{{ name }}"{% elif hint %} aria-describedby="h-{{ name }}"{% endif %}
+         {%- for k, v in kwargs.items() %} {{ k|replace('_', '-') }}="{{ v }}"{% endfor %}>
+  {% if hint and not err %}<p class="hint" id="h-{{ name }}">{{ hint }}</p>{% endif %}
+  {% if err %}<p class="error" id="e-{{ name }}">{{ icon('alert') }}<span>{{ err }}</span></p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro select(name, label, options, values, errors, required=True, placeholder='Choose an option', hint=None, span2=False, optional_text=False) -%}
+{% set err = errors.get(name) %}
+{% set current = values.get(name, '') %}
+<div class="field{% if span2 %} span-2{% endif %}"{% if err %} data-invalid{% endif %}>
+  <label for="f-{{ name }}">{{ label }}{% if required %}<span class="req" aria-hidden="true">*</span>{% elif optional_text %} <span class="opt">(optional)</span>{% endif %}</label>
+  <select class="select" id="f-{{ name }}" name="{{ name }}"
+          {%- if required %} required{% endif %}
+          {%- if err %} aria-invalid="true" aria-describedby="e-{{ name }}"{% elif hint %} aria-describedby="h-{{ name }}"{% endif %}>
+    <option value="">{{ placeholder }}</option>
+    {% for o in options %}
+      {% if o is string %}
+        <option value="{{ o }}" {% if o == current %}selected{% endif %}>{{ o }}</option>
+      {% else %}
+        <option value="{{ o[0] }}" {% if o[0] == current %}selected{% endif %}>{{ o[1] }}</option>
+      {% endif %}
+    {% endfor %}
+  </select>
+  {% if hint and not err %}<p class="hint" id="h-{{ name }}">{{ hint }}</p>{% endif %}
+  {% if err %}<p class="error" id="e-{{ name }}">{{ icon('alert') }}<span>{{ err }}</span></p>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro textarea(name, label, values, errors, required=True, hint=None, rows=5, maxlength=2000, span2=True) -%}
+{% set err = errors.get(name) %}
+<div class="field{% if span2 %} span-2{% endif %}"{% if err %} data-invalid{% endif %}>
+  <label for="f-{{ name }}">{{ label }}{% if required %}<span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  <textarea class="textarea" id="f-{{ name }}" name="{{ name }}" rows="{{ rows }}" maxlength="{{ maxlength }}"
+            {%- if required %} required{% endif %}
+            {%- if err %} aria-invalid="true" aria-describedby="e-{{ name }}"{% elif hint %} aria-describedby="h-{{ name }}"{% endif %}>{{ values.get(name, '') }}</textarea>
+  {% if hint and not err %}<p class="hint" id="h-{{ name }}">{{ hint }}</p>{% endif %}
+  {% if err %}<p class="error" id="e-{{ name }}">{{ icon('alert') }}<span>{{ err }}</span></p>{% endif %}
+</div>
+{%- endmacro %}
+
+{# Hidden CSRF input - put inside every <form method="post"> #}
+{% macro csrf() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro %}
+
+{# Spam trap: people never see this field, many bots fill it in. #}
+{% macro honeypot() -%}
+<div class="hp" aria-hidden="true"><label>Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+{%- endmacro %}

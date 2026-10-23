@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Students{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Student accounts</h1><p>{{ rows|length }} shown.</p></div></div>
+<form class="toolbar toolbar--simple" method="get" action="{{ url_for('admin.students') }}">
+  <div class="field"><label for="q">Search</label><input class="input" id="q" name="q" value="{{ q }}" placeholder="Name or email" maxlength="60"></div>
+  <div><button class="btn btn--navy" type="submit">Search</button></div>
+</form>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Student</th><th>Applications</th><th>Joined</th><th>Last login</th><th>Account</th></tr></thead>
+    <tbody>{% for s in rows %}<tr>
+      <td>{{ s.full_name }}<span class="sub">{{ s.email }}{% if s.phone %} &middot; {{ s.phone }}{% endif %}</span></td>
+      <td>{{ s.apps }}</td><td>{{ s.created_at|dmy }}</td><td>{{ s.last_login|ist if s.last_login else 'Never' }}</td>
+      <td>
+        {% if staff.role == 'admin' %}
+        <div class="actions">
+          <form method="post" action="{{ url_for('admin.student_toggle', student_id=s.id) }}">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ 'Disable' if s.is_active else 'Enable' }}</button></form>
+          <form class="inline-reset" method="post" action="{{ url_for('admin.student_reset', student_id=s.id) }}" data-confirm="Set a new password for {{ s.email }}?">
+            {{ csrf() }}<label class="sr-only" for="pw{{ s.id }}">New password for {{ s.email }}</label>
+            <input class="input" id="pw{{ s.id }}" name="password" type="text" placeholder="New password" autocomplete="off" required minlength="8">
+            <button class="btn btn--ghost btn--sm" type="submit">Reset</button></form>
+        </div>
+        {% else %}{{ 'Active' if s.is_active else 'Disabled' }}{% endif %}
+      </td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">No student accounts yet.</p>{% endif %}
+</section>
+{% endblock %}

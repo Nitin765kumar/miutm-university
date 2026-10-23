@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Accessibility{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap"><h1>Accessibility</h1><p>We want everyone to be able to use this site.</p></div></section>
+<section class="section"><div class="wrap prose">
+  <h2>What we do</h2>
+  <ul>
+    <li>Every page works with a keyboard, with a visible focus outline and a skip link.</li>
+    <li>Form fields have visible labels, and errors say what to fix.</li>
+    <li>Text colours meet contrast guidelines, and text can be enlarged without breaking the layout.</li>
+    <li>Images have text descriptions, and animation respects your reduced-motion setting.</li>
+    <li>The application form works without JavaScript.</li>
+  </ul>
+  <h2>Tell us about a problem</h2>
+  <p>If something is hard to use, write to <a href="mailto:{{ departments[7].email }}">{{ departments[7].email }}</a> or use the <a href="{{ url_for('contact') }}">contact form</a>. Say which page and what device or assistive technology you use, and we will fix it.</p>
+</div></section>
+{% endblock %}

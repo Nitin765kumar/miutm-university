@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}{{ course.name }}{% endblock %}
+{% block description %}{{ course.name }} at {{ site.short }}: {{ course.duration }}, {{ course.fee|inr }} {{ course.fee_period }}, {{ course.seats }} seats. {{ course.summary }}{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-lab">
+  <div class="wrap">
+    <ol class="crumbs">
+      <li><a href="{{ url_for('programmes') }}">Programmes</a></li>
+      <li aria-current="page">{{ course.code }}</li>
+    </ol>
+    <h1>{{ course.name }}</h1>
+    <p>{{ course.summary }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap detail">
+    <div>
+      <h2>What you will study</h2>
+      <ul class="topics">
+        {% for t in topics %}<li>{{ icon('check') }}<span>{{ t }}</span></li>{% endfor %}
+      </ul>
+
+      <h2>Who can apply</h2>
+      <p>{{ course.eligibility }}</p>
+      <p class="muted">The application form checks your qualification and marks against these rules before you submit.</p>
+
+      {% if related %}
+      <h2 class="mt-lg">Also in {{ course.school }}</h2>
+      <ul>
+        {% for r in related %}<li><a href="{{ url_for('programme_detail', slug=r.slug) }}">{{ r.name }}</a> ({{ r.duration }})</li>{% endfor %}
+      </ul>
+      {% endif %}
+    </div>
+
+    <aside class="facts" aria-label="Programme facts">
+      <p class="big mb-0">{{ course.fee|inr }}</p>
+      <p class="muted">{{ course.fee_period }}</p>
+      <dl>
+        <div><dt>Duration</dt><dd>{{ course.duration }}</dd></div>
+        <div><dt>Level</dt><dd>{{ course.level }}</dd></div>
+        <div><dt>School</dt><dd>{{ course.school }}</dd></div>
+        <div><dt>Seats</dt><dd>{{ course.seats }}</dd></div>
+        {% if course.min_percent %}<div><dt>Minimum marks</dt><dd>{{ course.min_percent }}%</dd></div>{% endif %}
+      </dl>
+      {% if adm_state == 'open' %}
+        <a class="btn btn--gold" href="{{ url_for('apply', course=course.slug) }}">Apply for this programme</a>
+      {% else %}
+        <a class="btn btn--line" href="{{ url_for('admission') }}">See admission dates</a>
+      {% endif %}
+    </aside>
+  </div>
+</section>
+{% endblock %}

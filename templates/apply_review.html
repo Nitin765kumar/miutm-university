@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Review and submit{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students no-print">
+  <div class="wrap">
+    <a class="back-link" href="{{ url_for('apply_documents') }}">{{ icon('arrow', 'flip') }}Back to documents</a>
+    <h1>Review and submit</h1>
+    <p>This is exactly how your application will look when printed. Check it, then submit.</p>
+  </div>
+</section>
+<section class="section sheet-section">
+  <div class="wrap">
+    <div class="no-print">
+      {% set current = 5 %}
+      {% include "partials/_apply_steps.html" %}
+      {% if missing %}
+      <div class="alert alert--warn">{{ icon('alert') }}<span><strong>Documents still missing:</strong> {{ missing|join(', ') }}. You can submit now and add them later from your dashboard, but the office cannot finish checking until they arrive. <a href="{{ url_for('apply_documents') }}">Add them now</a>.</span></div>
+      {% else %}
+      <div class="alert alert--success">{{ icon('check') }}<span>All required documents are saved.</span></div>
+      {% endif %}
+    </div>
+
+    {% include "partials/_application_sheet.html" %}
+
+    <form class="form submit-box no-print" method="post" action="{{ url_for('apply_submit') }}">
+      {{ csrf() }}
+      <div class="check">
+        <input type="checkbox" id="f-declaration" name="declaration" value="yes" required>
+        <label for="f-declaration">I declare that the information in this application is true and complete. I understand that false information can cancel my admission.</label>
+      </div>
+      <div class="form-actions">
+        <div class="form-actions-left">
+          <a class="btn btn--ghost" href="{{ url_for('apply_documents') }}">Back</a>
+          <a class="btn btn--ghost" href="{{ url_for('apply', step=0) }}">Edit details</a>
+          <a class="btn btn--ghost" href="{{ url_for('student.dashboard') }}" data-leave="Leave without submitting? Your draft is saved in your dashboard.">Cancel</a>
+        </div>
+        <div class="form-actions-right">
+          <button class="btn btn--ghost" type="button" data-print>{{ icon('printer') }}<span>Print preview</span></button>
+          <a class="btn btn--line" href="{{ url_for('student.dashboard') }}">Save and finish later</a>
+          <button class="btn btn--gold" type="submit" data-once>Submit application</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

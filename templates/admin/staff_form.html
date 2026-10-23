@@ -1,0 +1,18 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, field, select, csrf %}
+{% block title %}{{ 'Edit' if editing else 'Add' }} staff{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>{{ 'Edit staff account' if editing else 'Add staff account' }}</h1><p><a href="{{ url_for('admin.staff_list') }}">Back to staff</a></p></div></div>
+{% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some fields need fixing. They are marked below.</span></div>{% endif %}
+<form class="form card narrow" method="post" action="{{ url_for('admin.staff_edit', uid=values.id) if editing else url_for('admin.staff_new') }}">
+  {{ csrf() }}
+  {% if editing %}<div class="field"><span class="label">Username</span><p class="mb-0"><strong>{{ values.username }}</strong></p></div>
+  {% else %}{{ field('username', 'Username', values, errors, maxlength='30', autocomplete='off', hint='Lower-case letters, numbers, dot, dash or underscore.') }}{% endif %}
+  {{ field('full_name', 'Full name', values, errors, maxlength='80') }}
+  {{ field('email', 'Email', values, errors, type='email', required=False, optional_text=True, maxlength='120') }}
+  {{ select('role', 'Role', roles.items()|list, values, errors) }}
+  {% if editing %}<div class="field"><div class="check"><input type="checkbox" id="f-active" name="is_active" value="1" {% if values.get('is_active') %}checked{% endif %}><label for="f-active">Account is active (can sign in)</label></div></div>
+  {% else %}{{ field('password', 'Temporary password', {}, errors, autocomplete='new-password', hint='At least 10 characters with upper and lower case letters and a number. Share it privately.') }}{% endif %}
+  <div class="btn-row"><button class="btn btn--navy" type="submit" data-once>Save</button><a class="btn btn--ghost" href="{{ url_for('admin.staff_list') }}">Cancel</a></div>
+</form>
+{% endblock %}

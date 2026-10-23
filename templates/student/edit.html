@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, select, csrf %}
+{% block title %}Edit application{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap"><a class="back-link" href="{{ url_for('student.application', application_no=a.application_no) }}">{{ icon('arrow', 'flip') }}Back to the application</a>
+  <h1>Edit your application</h1><p>You can change details while the status is Pending.</p></div>
+</section>
+<section class="section"><div class="wrap">
+  {% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some answers need fixing. The fields are marked below.</span></div>{% endif %}
+  <form class="form panel" method="post" action="{{ url_for('student.edit_application', application_no=a.application_no) }}">
+    {{ csrf() }}
+    {% set course_opts = [] %}
+    {% for c in courses %}{% set _ = course_opts.append((c.code, c.name ~ ' (' ~ c.duration ~ ')')) %}{% endfor %}
+    <div class="form-grid">
+      {{ field('full_name', 'Full name', values, errors, span2=True, maxlength='80') }}
+      {{ field('father_name', "Father's name", values, errors, maxlength='80') }}
+      {{ field('mother_name', "Mother's name", values, errors, maxlength='80') }}
+      {{ field('dob', 'Date of birth', values, errors, type='date') }}
+      {{ select('gender', 'Gender', genders, values, errors) }}
+      {{ select('category', 'Category', categories, values, errors, required=False, optional_text=True, placeholder='Not applicable') }}
+      {{ field('nationality', 'Nationality', values, errors, maxlength='40') }}
+      {{ field('email', 'Email address', values, errors, type='email', maxlength='120') }}
+      {{ field('phone', 'Mobile number', values, errors, type='tel', pattern='[6-9][0-9]{9}', maxlength='10', inputmode='numeric') }}
+      {{ field('address', 'Permanent address', values, errors, span2=True, maxlength='200') }}
+      {{ field('city', 'City or town', values, errors, maxlength='60') }}
+      {{ select('state', 'State or union territory', states, values, errors) }}
+      {{ field('pincode', 'PIN code', values, errors, pattern='[1-9][0-9]{5}', maxlength='6', inputmode='numeric') }}
+      {{ select('course_code', 'Programme', course_opts, values, errors, span2=True) }}
+      {{ select('qualification', 'Highest completed qualification', qualifications, values, errors) }}
+      {{ field('percentage', 'Percentage of marks', values, errors, type='number', min='1', max='100', step='0.1') }}
+    </div>
+    <div class="btn-row"><button class="btn btn--navy" type="submit" data-once>Save changes</button><a class="btn btn--ghost" href="{{ url_for('student.application', application_no=a.application_no) }}">Cancel</a></div>
+  </form>
+</div></section>
+{% endblock %}

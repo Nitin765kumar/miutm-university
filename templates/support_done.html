@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Ticket received{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-library"><div class="wrap"><h1>We have your message</h1><p>A member of staff will answer within two working days.</p></div></section>
+<section class="section"><div class="wrap prose">
+  <h2>Your ticket number</h2>
+  <div class="appno"><strong>{{ number }}</strong><button class="btn btn--ghost btn--sm" type="button" data-copy="{{ number }}">{{ icon('copy') }}<span>Copy</span></button></div>
+  <p class="mt-md">Keep this number. Use it with your email on the <a href="{{ url_for('support_track') }}">ticket page</a> to read our answer.{% if email_on %} We have also emailed you a copy.{% endif %}</p>
+  <div class="btn-row mt-lg"><a class="btn btn--navy" href="{{ url_for('support_track') }}">Check ticket status</a><a class="btn btn--ghost" href="{{ url_for('index') }}">Back to home</a></div>
+</div></section>
+{% endblock %}

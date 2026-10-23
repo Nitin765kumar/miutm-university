@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}{{ cfg.title }}{% endblock %}
+{% block content %}
+<div class="admin-top">
+  <div><h1>{{ cfg.title }}</h1><p>{{ rows|length }} in total. <a href="{{ url_for('admin.content_index') }}">All content</a></p></div>
+  <a class="btn btn--navy btn--sm" href="{{ url_for('admin.content_new', kind=kind) }}">{{ icon('edit') }}Add {{ cfg.singular }}</a>
+</div>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr>{% for key, label in cfg.columns %}<th>{{ label }}</th>{% endfor %}<th>On website</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>{% for r in rows %}<tr>
+      {% for key, label in cfg.columns %}<td>{{ r[key] }}</td>{% endfor %}
+      <td><span class="badge badge--{{ 'approved' if r.is_published else 'cancelled' }}">{{ 'Visible' if r.is_published else 'Hidden' }}</span></td>
+      <td><div class="actions">
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.content_edit', kind=kind, rid=r.id) }}">Edit</a>
+        <form method="post" action="{{ url_for('admin.content_toggle', kind=kind, rid=r.id) }}">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ 'Hide' if r.is_published else 'Show' }}</button></form>
+        <form method="post" action="{{ url_for('admin.content_delete', kind=kind, rid=r.id) }}" data-confirm="Delete this {{ cfg.singular }} permanently?">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ icon('trash') }}<span class="sr-only">Delete</span></button></form>
+      </div></td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">Nothing here yet.</p>{% endif %}
+</section>
+{% endblock %}

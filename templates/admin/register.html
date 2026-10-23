@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin register | {{ site.short }}</title>
+  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="{{ asset('css/site.css') }}">
+  <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
+  <script src="{{ asset('js/boot.js') }}"></script>
+</head>
+<body class="admin-body">
+{% from "partials/_macros.html" import icon, field, csrf, honeypot %}
+<main class="login-wrap" id="main">
+  <div class="login-card login-card--wide">
+    <a class="brand" href="{{ url_for('index') }}">
+      <img src="{{ asset('img/logo-sm.webp') }}" width="52" height="52" alt="">
+      <span class="brand-text"><span class="brand-name">{{ site.short }}</span><span class="brand-sub">Staff area</span></span>
+    </a>
+    {% if done %}
+      <h1>Registration received</h1>
+      <div class="alert alert--success">{{ icon('check') }}<span>Thank you. An administrator must approve your account before you can sign in. Ask them to check <strong>Staff accounts</strong> in the staff area.</span></div>
+      <p><a class="btn btn--navy" href="{{ url_for('admin.login') }}">Back to sign in</a></p>
+    {% else %}
+      <h1>Admin register</h1>
+      <p class="muted">For university staff only. New accounts start as <strong>Reviewer</strong> and stay switched off until an administrator approves them.</p>
+      {% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some answers need fixing. They are marked below.</span></div>{% endif %}
+      <form class="form" method="post" action="{{ url_for('admin.register') }}">
+        {{ csrf() }}{{ honeypot() }}
+        {{ field('full_name', 'Full name', values, errors, maxlength='80', autocomplete='name') }}
+        {{ field('email', 'Work email', values, errors, type='email', maxlength='120', autocomplete='email') }}
+        {{ field('username', 'Username', values, errors, maxlength='30', autocomplete='username', hint='Lower-case letters, numbers, dot, dash or underscore.') }}
+        {{ field('password', 'Password', {}, errors, type='password', minlength='10', autocomplete='new-password', hint='At least 10 characters with upper and lower case letters and a number.') }}
+        {{ field('confirm', 'Repeat password', {}, errors, type='password', minlength='10', autocomplete='new-password') }}
+        {% if code_needed %}{{ field('access_code', 'Staff access code', {}, errors, autocomplete='off', hint='Given to you by an administrator.') }}{% endif %}
+        <button class="btn btn--navy" type="submit" data-once>Request access</button>
+      </form>
+      <p class="small mt-md mb-0">Already approved? <a href="{{ url_for('admin.login') }}">Sign in</a> &middot; <a href="{{ url_for('index') }}">Back to the website</a></p>
+    {% endif %}
+  </div>
+</main>
+{% include "partials/_sprite.html" %}
+<script src="{{ asset('js/main.js') }}" defer></script>
+</body>
+</html>
