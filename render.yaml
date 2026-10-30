@@ -34,10 +34,10 @@ services:
         sync: false
     # SQLite needs a disk that survives restarts. Disks need a paid plan.
     # Uncomment these lines and set the plan to "starter":
-    # disk:
-    #   name: miutm-data
-    #   mountPath: /var/data
-    #   sizeGB: 1
-    # and add this env var:
-    #   - key: DATABASE_PATH
-    #     value: /var/data/miutm.db
+    disk:
+      name: miutm-data
+      mountPath: /var/data
+      sizeGB: 1
+    and add this env var:
+      - key: DATABASE_PATH
+        value: /var/data/miutm.db
