@@ -9,7 +9,7 @@ services:
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.3
+        value: 3.14.7
       - key: SECRET_KEY
         generateValue: true
       - key: ADMIN_USERNAME
@@ -37,7 +37,7 @@ services:
     disk:
       name: miutm-data
       mountPath: /var/data
-      sizeGB: 1
+      sizeGB: 2
     and add this env var:
       - key: DATABASE_PATH
         value: /var/data/miutm.db
