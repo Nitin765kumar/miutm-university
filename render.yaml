@@ -3,27 +3,27 @@ services:
   - type: web
     name: miutm-university
     runtime: python
-    plan: starter          # change to "starter" to attach a persistent disk (see below)
+    plan: starter          # disk ke liye paid plan chahiye
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --preload --workers 2 --threads 4 --timeout 60
     healthCheckPath: /healthz
     envVars:
       - key: PYTHON_VERSION
-        value: 3.14.7
+        value: 3.12.7
       - key: SECRET_KEY
         generateValue: true
       - key: ADMIN_USERNAME
         value: admin
       - key: ADMIN_PASSWORD
-        sync: false        # you type it in the Render dashboard; it is never stored in git
+        sync: false        # Render dashboard me type karein; git me store nahi hota
       - key: DEMO_MODE
         value: "1"
       - key: SESSION_DAYS
         value: "90"
-      # Optional: require this code on the Admin register form
+      # Optional: Admin register form par ye code maanga jayega
       - key: STAFF_SIGNUP_CODE
         sync: false
-      # Optional email (see README). Leave these out to run without email.
+      # Optional email (README dekhein). Email ke bina chalana ho to inhe hata dein.
       - key: SMTP_HOST
         sync: false
       - key: SMTP_USER
@@ -32,12 +32,11 @@ services:
         sync: false
       - key: SMTP_FROM
         sync: false
-    # SQLite needs a disk that survives restarts. Disks need a paid plan.
-    # Uncomment these lines and set the plan to "starter":
+      # SQLite database ka path (persistent disk par)
+      - key: DATABASE_PATH
+        value: /var/data/miutm.db
+    # SQLite ko aisi disk chahiye jo restart ke baad bhi bachi rahe
     disk:
       name: miutm-data
       mountPath: /var/data
       sizeGB: 2
-    # and add this env var:
-      - key: DATABASE_PATH
-        value: /var/data/miutm.db
