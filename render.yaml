@@ -3,7 +3,7 @@ services:
   - type: web
     name: miutm-university
     runtime: python
-    plan: free            # change to "starter" to attach a persistent disk (see below)
+    plan: starter          # change to "starter" to attach a persistent disk (see below)
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --preload --workers 2 --threads 4 --timeout 60
     healthCheckPath: /healthz
