@@ -38,6 +38,6 @@ services:
       name: miutm-data
       mountPath: /var/data
       sizeGB: 2
-    and add this env var:
+    # and add this env var:
       - key: DATABASE_PATH
         value: /var/data/miutm.db
