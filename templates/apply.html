@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, select, csrf %}
+{% block title %}Apply online{% endblock %}
+{% block description %}Apply to {{ site.short }} for {{ cycle.session }} in five short steps.{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap">
+    <a class="back-link" href="{{ url_for('student.dashboard') }}">{{ icon('arrow', 'flip') }}Back to my dashboard</a>
+    <h1>Apply for {{ cycle.session }}</h1>
+    <p>Your answers are saved as you go. Leave any time and continue from your dashboard.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap apply-layout">
+    <div>
+      {% if errors %}
+      <div class="alert alert--danger" role="alert" data-form-error>{{ icon('alert') }}<span>Some answers need fixing. They are marked below. Nothing you typed was lost.</span></div>
+      {% endif %}
+
+      {% set current = 1 %}
+      {% include "partials/_apply_steps.html" %}
+
+      <form class="form" method="post" action="{{ url_for('apply') }}" data-wizard data-start="{{ start }}">
+        {{ csrf() }}
+        <input type="hidden" name="step" value="{{ start }}">
+
+        <fieldset class="step">
+          <legend>Personal details</legend>
+          <div class="form-grid">
+            {{ field('full_name', 'Full name', values, errors, span2=True, minlength='2', maxlength='80', autocomplete='name', hint='As written on your class 12 marksheet.') }}
+            {{ field('father_name', "Father's name", values, errors, maxlength='80') }}
+            {{ field('mother_name', "Mother's name", values, errors, maxlength='80') }}
+            {{ field('dob', 'Date of birth', values, errors, type='date', min='1950-01-01', max=((current_year - 14)|string ~ '-12-31'), autocomplete='bday') }}
+            {{ select('gender', 'Gender', genders, values, errors) }}
+            {{ select('category', 'Category', categories, values, errors, required=False, optional_text=True, placeholder='Not applicable') }}
+            {{ field('nationality', 'Nationality', values, errors, maxlength='40') }}
+          </div>
+        </fieldset>
+
+        <fieldset class="step">
+          <legend>Contact and address</legend>
+          <div class="form-grid">
+            {{ field('email', 'Email address', values, errors, type='email', maxlength='120', autocomplete='email') }}
+            {{ field('phone', 'Mobile number', values, errors, type='tel', pattern='[6-9][0-9]{9}', maxlength='10', inputmode='numeric', autocomplete='tel-national', title='10-digit mobile number starting with 6, 7, 8 or 9', hint='10 digits, without +91.') }}
+            {{ field('address', 'Permanent address', values, errors, span2=True, minlength='5', maxlength='200', autocomplete='street-address') }}
+            {{ field('city', 'City or town', values, errors, maxlength='60', autocomplete='address-level2') }}
+            {{ select('state', 'State or union territory', states, values, errors) }}
+            {{ field('pincode', 'PIN code', values, errors, pattern='[1-9][0-9]{5}', maxlength='6', inputmode='numeric', autocomplete='postal-code', title='6-digit PIN code') }}
+          </div>
+        </fieldset>
+
+        <fieldset class="step">
+          <legend>Education and programme</legend>
+          {% set course_opts = [] %}
+          {% for c in courses %}{% set _ = course_opts.append((c.code, c.name ~ ' (' ~ c.duration ~ ')')) %}{% endfor %}
+          <div class="form-grid">
+            {{ select('course_code', 'Programme', course_opts, values, errors, span2=True, placeholder='Choose a programme', hint='Eligibility is checked against the programme you choose.') }}
+            {{ select('qualification', 'Highest completed qualification', qualifications, values, errors) }}
+            {{ field('percentage', 'Percentage of marks', values, errors, type='number', min='1', max='100', step='0.1', inputmode='decimal', hint='Overall percentage. Convert CGPA to percentage first.') }}
+          </div>
+        </fieldset>
+
+        <div class="form-actions">
+          <div class="form-actions-left">
+            <button type="button" class="btn btn--ghost js-only" data-prev>Back</button>
+            <a class="btn btn--ghost" href="{{ url_for('student.dashboard') }}" data-leave="Leave without continuing? Anything you did not save is lost. Use Save draft first to keep it.">Cancel</a>
+          </div>
+          <div class="form-actions-right">
+            <button type="submit" class="btn btn--line" name="action" value="save" formnovalidate>Save draft</button>
+            <button type="button" class="btn btn--navy js-only" data-next>Next {{ icon('arrow') }}</button>
+            <button type="submit" class="btn btn--gold" name="action" value="next" data-submit>Save and continue to documents {{ icon('arrow') }}</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <aside class="aside-card" aria-label="Before you start">
+      <h2>Before you start</h2>
+      <ul>
+        <li>Applications close on {{ (cycle.milestones|selectattr('key', 'equalto', 'closes')|first).date|dmy }}.</li>
+        <li>Keep your marksheets nearby. You can upload them in step 4.</li>
+        <li><strong>Save draft</strong> keeps what you typed so you can finish later.</li>
+        <li>You get your application number when you submit in step 5.</li>
+      </ul>
+      <p class="small muted">Your details are used only for admission. Read the <a href="{{ url_for('privacy') }}">privacy policy</a>.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

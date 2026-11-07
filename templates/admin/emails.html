@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Email log{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Email log</h1><p>Every email the site tried to send. A failed email never stops an application or a payment.{% if not email_on %} <strong>Email is not set up on this server</strong>, so nothing is sent.{% endif %}</p></div></div>
+<div class="tabs" role="navigation" aria-label="Filter">
+  <a href="{{ url_for('admin.emails') }}" {% if show != 'failed' %}aria-current="page"{% endif %}>All</a>
+  <a href="{{ url_for('admin.emails', show='failed') }}" {% if show == 'failed' %}aria-current="page"{% endif %}>Failed</a>
+</div>
+{% if show == 'failed' %}<form method="post" action="{{ url_for('admin.emails_retry') }}" class="mb-md">{{ csrf() }}<button class="btn btn--navy btn--sm" type="submit">{{ icon('mail') }}Retry failed emails</button></form>{% endif %}
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>When</th><th>To</th><th>Subject</th><th>State</th><th>Attempts</th><th>Last error</th></tr></thead>
+    <tbody>{% for r in rows %}<tr><td class="nowrap">{{ r.created_at|ist }}</td><td>{{ r.to_email }}</td><td>{{ r.subject }}</td>
+      <td><span class="badge badge--{{ 'approved' if r.status == 'Sent' else 'rejected' if r.status == 'Failed' else 'pending' }}">{{ r.status }}</span></td><td>{{ r.attempts }}</td><td>{{ r.last_error or '' }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">Nothing here.</p>{% endif %}
+</section>
+{% endblock %}

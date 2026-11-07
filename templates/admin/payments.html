@@ -1,0 +1,33 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Payments{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Payments</h1><p>{{ total }} {{ 'payment' if total == 1 else 'payments' }} &middot; received {{ summary.received|inr }}{% if summary.refunded %} &middot; refunded {{ summary.refunded|inr }}{% endif %}</p></div>
+  <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.payments_export', **filters) }}">{{ icon('download') }}Export (CSV)</a></div>
+<form class="filter-bar" method="get" action="{{ url_for('admin.payments_list') }}">
+  <div class="field"><label for="q">Search</label><input class="input" id="q" name="q" value="{{ filters.q }}" placeholder="Order, transaction, application or name" maxlength="60"></div>
+  <div class="field"><label for="st">Status</label><select class="select" id="st" name="status"><option value="">All</option>{% for s in statuses %}<option {% if s == filters.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="pu">Purpose</label><select class="select" id="pu" name="purpose"><option value="">All</option>{% for s in purposes %}<option {% if s == filters.purpose %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="co">Programme</label><select class="select" id="co" name="course"><option value="">All</option>{% for c in courses %}<option value="{{ c.code }}" {% if c.code == filters.course %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="fr">From</label><input class="input" id="fr" type="date" name="from" value="{{ filters['from'] }}"></div>
+  <div class="field"><label for="to">To</label><input class="input" id="to" type="date" name="to" value="{{ filters.to }}"></div>
+  <div class="btn-row"><button class="btn btn--navy" type="submit">Filter</button>{% if filters.values()|select|list %}<a class="btn btn--ghost" href="{{ url_for('admin.payments_list') }}">Clear</a>{% endif %}</div>
+</form>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Order</th><th>Student</th><th>Purpose</th><th>Amount</th><th>Method</th><th>Status</th><th>When</th></tr></thead>
+    <tbody>{% for p in rows %}<tr>
+      <td><a href="{{ url_for('admin.payment_detail', payment_id=p.id) }}">{{ p.order_id }}</a><span class="sub">{{ p.transaction_id or 'no transaction yet' }}</span></td>
+      <td><a href="{{ url_for('admin.application', admission_id=p.admission_id) }}">{{ p.full_name }}</a><span class="sub">{{ p.application_no }} &middot; {{ p.course_code }}</span></td>
+      <td>{{ p.purpose }}</td><td>{{ p.amount|inr }}</td><td>{{ p.method or '-' }}</td>
+      <td><span class="badge badge--{{ 'approved' if p.status == 'Successful' else 'rejected' if p.status == 'Failed' else 'cancelled' if p.status in ('Cancelled', 'Refunded') else 'pending' }}">{{ p.status }}</span></td>
+      <td>{{ (p.paid_at or p.created_at)|ist }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">No payments match.</p>{% endif %}
+  {% if pages > 1 %}<nav class="pager" aria-label="Pages">
+    {% if page > 1 %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.payments_list', page=page-1, **filters) }}">Previous</a>{% else %}<span></span>{% endif %}
+    <span class="muted">Page {{ page }} of {{ pages }}</span>
+    {% if page < pages %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.payments_list', page=page+1, **filters) }}">Next</a>{% else %}<span></span>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}

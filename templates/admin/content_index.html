@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Website content{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Website content</h1><p>Everything visitors read on the public site. Changes appear straight away.</p></div></div>
+<div class="tiles">
+  {% for key, c in content.items() %}
+  <a class="tile" href="{{ url_for('admin.content_list', kind=key) }}"><strong>{{ counts[key] }}</strong><span>{{ c.title }}</span></a>
+  {% endfor %}
+</div>
+<p class="muted">Hide an item to take it off the website without deleting it.</p>
+{% endblock %}

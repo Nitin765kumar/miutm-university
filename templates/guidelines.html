@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Admission guidelines{% endblock %}
+{% block description %}The rules and steps for applying to {{ site.short }}.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Admission guidelines</h1><p>Read these before you apply.</p></div></section>
+<section class="section"><div class="wrap">
+  <ol class="goals">{% for title, text in items %}<li><h3>{{ title }}</h3><p>{{ text }}</p></li>{% endfor %}</ol>
+  <div class="btn-row mt-lg">
+    {% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}
+    <a class="btn btn--navy" href="{{ url_for('admission') }}">Admissions overview</a>
+    <a class="btn btn--ghost" href="{{ url_for('documents_required') }}">Documents required</a>
+    <a class="btn btn--ghost" href="{{ url_for('fees') }}">Fee structure</a>
+  </div>
+</div></section>
+{% endblock %}

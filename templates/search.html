@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-lab"><div class="wrap"><h1>Search the site</h1><p>Programmes, notices, events and questions.</p></div></section>
+<section class="section"><div class="wrap">
+  <form class="searchbar" method="get" action="{{ url_for('search') }}" role="search">
+    <label class="sr-only" for="q">Search</label>
+    <input class="input" id="q" name="q" type="search" value="{{ q }}" placeholder="For example: python, scholarship, hostel" maxlength="60" autofocus>
+    <button class="btn btn--navy" type="submit">{{ icon('search') }}<span>Search</span></button>
+  </form>
+  {% if q and q|length < 2 %}<p class="muted mt-md">Type at least 2 characters.</p>
+  {% elif q %}
+    <p class="muted mt-md" aria-live="polite">{{ count }} {{ 'result' if count == 1 else 'results' }} for &ldquo;{{ q }}&rdquo;</p>
+    {% if results.programmes %}<h2>Programmes</h2><ul class="rows">{% for c in results.programmes %}<li><strong><a href="{{ url_for('programme_detail', slug=c.slug) }}">{{ c.name }}</a></strong><span>{{ c.level }} &middot; {{ c.duration }} &middot; {{ c.school }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if results.notices %}<h2 class="mt-lg">Notices</h2><ul class="rows">{% for n in results.notices %}<li><strong><a href="{{ url_for('news') }}">{{ n.title }}</a></strong><span>{{ n.published_on|dmy }} &middot; {{ n.body[:140] }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if results.events %}<h2 class="mt-lg">Events</h2><ul class="rows">{% for e in results.events %}<li><strong><a href="{{ url_for('news') }}">{{ e.title }}</a></strong><span>{{ e.starts_on|dmy }} &middot; {{ e.description[:140] }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if results.faqs %}<h2 class="mt-lg">Questions</h2><ul class="rows">{% for f in results.faqs %}<li><strong><a href="{{ url_for('admission') }}">{{ f.question }}</a></strong><span>{{ f.answer[:160] }}</span></li>{% endfor %}</ul>{% endif %}
+    {% if count == 0 %}<p>Nothing found. Try a shorter word, or <a href="{{ url_for('contact') }}">ask us</a>.</p>{% endif %}
+  {% endif %}
+</div></section>
+{% endblock %}

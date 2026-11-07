@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, select, textarea, csrf, honeypot %}
+{% block title %}Help and grievances{% endblock %}
+{% block description %}Report a problem, ask for help or file a grievance with {{ site.short }}. Every message gets a ticket number you can follow.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-library">
+  <div class="wrap"><h1>Help and grievances</h1><p>Tell us what went wrong. You get a ticket number and can follow the answer here.</p></div>
+</section>
+<section class="section">
+  <div class="wrap contact-layout">
+    <div>
+      {% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some answers need fixing. The fields are marked below.</span></div>{% endif %}
+      <form class="form panel" method="post" action="{{ url_for('support') }}">
+        {{ csrf() }}{{ honeypot() }}
+        <div class="form-grid">
+          {{ field('name', 'Your name', values, errors, maxlength='80', autocomplete='name') }}
+          {{ field('email', 'Email address', values, errors, type='email', maxlength='120', autocomplete='email') }}
+          {{ field('phone', 'Mobile number', values, errors, type='tel', required=False, optional_text=True, pattern='[6-9][0-9]{9}', maxlength='10', inputmode='numeric', title='10-digit mobile number') }}
+          {{ select('category', 'What is it about?', categories, values, errors, placeholder='Choose a topic') }}
+          {{ field('subject', 'Subject', values, errors, span2=True, maxlength='120') }}
+          {{ textarea('message', 'What happened?', values, errors, rows=7, maxlength=3000, hint='Include dates, names of places or offices, and your application number if you have one.') }}
+        </div>
+        <div><button class="btn btn--navy" type="submit" data-once>Submit</button></div>
+      </form>
+    </div>
+    <div>
+      <h2>Already have a ticket?</h2>
+      <p>Check the answer with your ticket number and email.</p>
+      <p><a class="btn btn--ghost" href="{{ url_for('support_track') }}">Check ticket status</a></p>
+      <h2 class="mt-lg">Anti-ragging</h2>
+      <p>MIUTM has zero tolerance for ragging or harassment of any kind. Choose <strong>Ragging or harassment</strong> as the topic and your report is read by senior staff first. You can also report to the national anti-ragging helpline at antiragging.in.</p>
+      <h2 class="mt-lg">Urgent matters</h2>
+      <p>Call <a href="tel:{{ site.phone|replace(' ', '') }}">{{ site.phone }}</a> during office hours: {{ site.hours }}.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

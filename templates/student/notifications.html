@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Notifications</h1><p>Updates about your applications, documents and payments.</p></div></section>
+<section class="section"><div class="wrap">
+  {% include "student/_tabs.html" %}
+  {% if rows %}
+  <form method="post" action="{{ url_for('student.notifications_read_all') }}" class="mb-md">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ icon('check') }}Mark all as read</button></form>
+  <ul class="notes">
+    {% for n in rows %}
+    <li class="{{ '' if n.is_read else 'is-unread' }}">
+      <div><strong>{{ n.title }}</strong>{% if not n.is_read %} <span class="count-pill">New</span>{% endif %}
+        <p class="mb-0">{{ n.body }}</p><span class="muted small">{{ n.created_at|ist }}</span></div>
+      <div class="actions">
+        {% if n.link %}<a class="btn btn--ghost btn--sm" href="{{ n.link }}">Open</a>{% endif %}
+        {% if not n.is_read %}<form method="post" action="{{ url_for('student.notification_read', nid=n.id) }}">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Mark as read</button></form>{% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}<div class="panel"><p class="mb-0">No notifications yet. They appear here when your application, documents or payments change.</p></div>{% endif %}
+</div></section>
+{% endblock %}

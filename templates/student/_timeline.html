@@ -1,0 +1,7 @@
+{% from "partials/_macros.html" import icon %}
+{# The application journey. Needs: timeline (list of {label, state}) #}
+<ol class="journey" aria-label="Application progress">
+  {% for t in timeline %}
+  <li data-state="{{ t.state }}"><span class="j-dot" aria-hidden="true">{% if t.state == 'done' %}{{ icon('check') }}{% endif %}</span><span class="j-label">{{ t.label }}</span>{% if t.state == 'current' %}<span class="j-now">In progress</span>{% endif %}</li>
+  {% endfor %}
+</ol>

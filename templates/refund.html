@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Refund and cancellation policy{% endblock %}
+{% block description %}When fees are refunded at {{ site.short }}, and how to cancel an application.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Refund and cancellation policy</h1><p>When a fee comes back, and how to ask.</p></div></section>
+<section class="section"><div class="wrap prose">
+  {% if demo_mode %}<div class="callout"><p>{{ site.demo_notice }} Payments are a demonstration and no money is charged, so no real refund is ever made.</p></div>{% endif %}
+  {% for title, text in items %}<h2>{{ title }}</h2><p>{{ text }}</p>{% endfor %}
+  <p class="muted">Questions: <a href="mailto:{{ departments[4].email }}">{{ departments[4].email }}</a> or the <a href="{{ url_for('contact') }}">contact form</a>.</p>
+</div></section>
+{% endblock %}

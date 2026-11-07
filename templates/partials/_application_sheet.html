@@ -1,0 +1,81 @@
+{# The complete application form as a printable sheet. Needs: a (admissions row) #}
+<article class="sheet" aria-label="Application form{% if not preview %} {{ a.application_no }}{% endif %}">
+  <header class="sheet-head">
+    <img src="{{ asset('img/logo-sm.webp') }}" width="72" height="72" alt="">
+    <div class="sheet-title">
+      <p class="sheet-uni">{{ site.name }}</p>
+      <p class="sheet-form">Application form &middot; Admissions {{ cycle.session }}</p>
+      <p class="sheet-addr">{{ site.address|join(', ') }}</p>
+    </div>
+    <div class="photo-box" aria-hidden="true">Affix recent passport-size photograph</div>
+  </header>
+
+  <div class="sheet-no">
+    <span>Application number</span>
+    {% if preview %}<strong>Given when you submit</strong>
+    <span class="sheet-when">PREVIEW: not yet submitted</span>
+    {% else %}<strong>{{ a.application_no }}</strong>
+    <span class="sheet-when">Submitted online on {{ a.created_at|ist }}</span>{% endif %}
+  </div>
+
+  <section class="sheet-sec">
+    <h2>1. Personal details</h2>
+    <dl class="sheet-grid">
+      <div class="wide"><dt>Full name</dt><dd>{{ a.full_name }}</dd></div>
+      <div><dt>Father's name</dt><dd>{{ a.father_name }}</dd></div>
+      <div><dt>Mother's name</dt><dd>{{ a.mother_name }}</dd></div>
+      <div><dt>Date of birth</dt><dd>{{ a.dob|dmy }}</dd></div>
+      <div><dt>Gender</dt><dd>{{ a.gender }}</dd></div>
+      <div><dt>Category</dt><dd>{{ a.category or 'Not stated' }}</dd></div>
+      <div><dt>Nationality</dt><dd>{{ a.nationality }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="sheet-sec">
+    <h2>2. Contact and address</h2>
+    <dl class="sheet-grid">
+      <div class="w2"><dt>Email</dt><dd>{{ a.email }}</dd></div>
+      <div><dt>Mobile number</dt><dd>{{ a.phone }}</dd></div>
+      <div class="wide"><dt>Permanent address</dt><dd>{{ a.address }}</dd></div>
+      <div><dt>City or town</dt><dd>{{ a.city }}</dd></div>
+      <div><dt>State or union territory</dt><dd>{{ a.state }}</dd></div>
+      <div><dt>PIN code</dt><dd>{{ a.pincode }}</dd></div>
+    </dl>
+  </section>
+
+  <section class="sheet-sec">
+    <h2>3. Education and programme applied for</h2>
+    <dl class="sheet-grid">
+      <div class="wide"><dt>Programme</dt><dd>{{ a.course_name }} ({{ a.course_code }})</dd></div>
+      <div><dt>Highest qualification</dt><dd>{{ a.qualification }}</dd></div>
+      <div><dt>Percentage of marks</dt><dd>{{ a.percentage }}%</dd></div>
+    </dl>
+  </section>
+
+  <section class="sheet-sec">
+    <h2>4. Declaration</h2>
+    <p>I declare that the information given in this application is true and complete. I understand that false information can lead to cancellation of my admission.</p>
+    {% if not preview %}<p class="sheet-accepted">Declaration accepted online on {{ a.created_at|ist }}.</p>{% endif %}
+    <div class="sign-row">
+      <div><span class="line"></span>Applicant's signature</div>
+      <div><span class="line"></span>Parent or guardian's signature</div>
+      <div><span class="line"></span>Date</div>
+    </div>
+  </section>
+
+  <section class="sheet-sec office">
+    <h2>For office use only</h2>
+    <dl class="sheet-grid">
+      <div><dt>Documents verified</dt><dd class="blank"></dd></div>
+      <div><dt>Verified by</dt><dd class="blank"></dd></div>
+      <div><dt>Decision</dt><dd class="blank"></dd></div>
+      <div><dt>Date</dt><dd class="blank"></dd></div>
+    </dl>
+  </section>
+
+  <footer class="sheet-foot">
+    <p><strong>Bring to counselling:</strong> this form, class 10 and 12 marksheets (and degree or diploma marksheets, if applicable), a photo identity document, passport-size photographs, and a category certificate if you claim a reserved seat.</p>
+    <p>Track your application at {{ request.url_root }}track with your application number and date of birth.</p>
+    {% if demo_mode %}<p class="sheet-demo">{{ site.demo_notice }}</p>{% endif %}
+  </footer>
+</article>

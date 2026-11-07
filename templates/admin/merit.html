@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}Merit lists{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Merit lists</h1><p>Session {{ session_label }}. Ranked by marks, then by who applied first. Applications that have not paid are not ranked.</p></div></div>
+<form class="toolbar toolbar--simple" method="get" action="{{ url_for('admin.merit') }}">
+  <div class="field"><label for="course">Programme</label>
+    <select class="select" id="course" name="course">{% for c in courses %}<option value="{{ c.code }}" {% if c.code == code %}selected{% endif %}>{{ c.code }}: {{ c.name }}</option>{% endfor %}</select></div>
+  <div><button class="btn btn--navy" type="submit">Show</button></div>
+</form>
+<div class="stats">
+  <div class="stat"><strong>{{ seats }}</strong><span>Seats</span></div>
+  <div class="stat"><strong>{{ filled }}</strong><span>Held (selected, fee pending, approved, confirmed)</span></div>
+  <div class="stat"><strong>{{ available }}</strong><span>Seats available</span></div>
+  <div class="stat"><strong>{{ waiting }}</strong><span>Awaiting a decision</span></div>
+  <div class="stat"><strong>{{ 'Published' if pub else 'Not published' }}</strong><span>{% if pub %}{{ pub.published_at|ist }}{% else %}Students cannot see ranks yet{% endif %}</span></div>
+</div>
+<section class="card">
+  <h2>Run and publish</h2>
+  {% if staff.role == 'admin' %}
+  <p>Running the list saves every applicant's rank and marks, selects the top applicants for the {{ available }} free seat{{ '' if available == 1 else 's' }}, and waitlists the rest. Decisions you already made are not changed. Students are notified of their new status. When a selected applicant leaves, the best-ranked waitlisted applicant is selected automatically.</p>
+  <div class="btn-row">
+    <form method="post" action="{{ url_for('admin.merit_apply', code=code) }}" data-confirm="Rank everyone and select or waitlist the applicants awaiting a decision for {{ code }}?">{{ csrf() }}
+      <button class="btn btn--gold" type="submit" {% if not waiting %}disabled{% endif %}>Run merit list ({{ waiting }} awaiting)</button></form>
+    <form method="post" action="{{ url_for('admin.merit_publish', code=code) }}" data-confirm="Publish the merit list for {{ code }}? Students are notified and can find their rank on the public Merit lists page.">{{ csrf() }}
+      <button class="btn btn--navy" type="submit">{{ 'Publish again' if pub else 'Publish merit list' }}</button></form>
+    {% if pub %}<form method="post" action="{{ url_for('admin.merit_publish', code=code) }}" data-confirm="Take the merit list off the public page?">{{ csrf() }}<input type="hidden" name="unpublish" value="1"><button class="btn btn--ghost" type="submit">Unpublish</button></form>{% endif %}
+    <a class="btn btn--ghost" href="{{ url_for('admin.merit_export', code=code) }}">{{ icon('download') }}Download (CSV)</a>
+  </div>
+  {% else %}<p class="muted">Only administrators can run or publish merit lists. You can download the list: <a href="{{ url_for('admin.merit_export', code=code) }}">CSV</a>.</p>{% endif %}
+</section>
+<section class="card">
+  {% if rows %}
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Rank</th><th>Applicant</th><th>Marks</th><th>Category</th><th>Payment</th><th>Status</th></tr></thead>
+    <tbody>{% for r in rows %}<tr>
+      <td>{{ r.merit_rank or '-' }}</td>
+      <td><a href="{{ url_for('admin.application', admission_id=r.id) }}">{{ r.full_name }}</a><span class="sub">{{ r.application_no }}</span></td>
+      <td>{{ r.percentage }}%</td><td>{{ r.category or '-' }}</td><td>{{ r.payment_status }}</td><td>{{ badge(r.status) }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="empty">No ranked applications for this programme yet.</p>{% endif %}
+</section>
+{% endblock %}

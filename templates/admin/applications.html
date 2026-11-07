@@ -1,0 +1,72 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}Applications{% endblock %}
+{% block content %}
+<div class="admin-top">
+  <div><h1>Applications</h1><p>{{ total }} {{ 'result' if total == 1 else 'results' }}</p></div>
+  <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.export_csv', **filters) }}">{{ icon('download') }}Export all results (CSV)</a>
+</div>
+
+<form class="filter-bar" method="get" action="{{ url_for('admin.applications') }}">
+  <div class="field"><label for="q">Search</label><input class="input" id="q" name="q" value="{{ filters.q }}" placeholder="Name, number, phone or email" maxlength="60"></div>
+  <div class="field"><label for="st">Status</label><select class="select" id="st" name="status"><option value="">All</option>{% for s in statuses %}<option {% if s == filters.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="co">Programme</label><select class="select" id="co" name="course"><option value="">All</option>{% for c in courses %}<option value="{{ c.code }}" {% if c.code == filters.course %}selected{% endif %}>{{ c.code }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="pay">Payment</label><select class="select" id="pay" name="payment"><option value="">All</option>{% for s in ['Paid', 'Unpaid', 'Refunded', 'Waived'] %}<option {% if s == filters.payment %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="dc">Documents</label><select class="select" id="dc" name="docs"><option value="">All</option>
+    {% for v, l in [('pending', 'Some pending'), ('rejected', 'Some rejected'), ('verified', 'All verified'), ('none', 'None uploaded')] %}<option value="{{ v }}" {% if v == filters.docs %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="se">Session</label><select class="select" id="se" name="session"><option value="">All</option>{% for s in sessions %}<option {% if s == filters.session %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="fr">From</label><input class="input" id="fr" type="date" name="from" value="{{ filters['from'] }}"></div>
+  <div class="field"><label for="to">To</label><input class="input" id="to" type="date" name="to" value="{{ filters.to }}"></div>
+  <div class="btn-row"><button class="btn btn--navy" type="submit">Filter</button>{% if filters.values()|select|list %}<a class="btn btn--ghost" href="{{ url_for('admin.applications') }}">Clear</a>{% endif %}</div>
+</form>
+
+<form method="post" action="{{ url_for('admin.bulk') }}" id="bulk-form">
+  {{ csrf() }}
+  <section class="card">
+    {% if rows %}
+    <div class="bulk-bar">
+      <label class="check check--inline"><input type="checkbox" data-select-all="#bulk-form"><span>Select all on this page</span></label>
+      <label class="sr-only" for="bulk-action">Action for the selected applications</label>
+      <select class="select select--sm" id="bulk-action" name="action">
+        <option value="">With the selected...</option><option value="export">Export to CSV</option><option value="verify_docs">Verify their pending documents</option><option value="status">Change status to...</option>
+      </select>
+      <label class="sr-only" for="bulk-status">New status</label>
+      <select class="select select--sm" id="bulk-status" name="status"><option value="">Status</option>{% for s in statuses %}<option>{{ s }}</option>{% endfor %}</select>
+      <label class="sr-only" for="bulk-note">Message to the applicants</label>
+      <input class="input input--sm" id="bulk-note" name="note" placeholder="Message to applicants (needed for Rejected)" maxlength="400">
+      <button class="btn btn--navy btn--sm" type="submit" data-confirm-bulk>Apply</button>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th><span class="sr-only">Select</span></th><th>Application</th><th>Applicant</th><th>Programme</th><th>Marks</th><th>Payment</th><th>Documents</th><th>Status</th><th><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+          {% for a in rows %}{% set f = flags.get(a.id) %}
+          <tr>
+            <td><input type="checkbox" name="ids" value="{{ a.id }}" aria-label="Select {{ a.application_no }}"></td>
+            <td><a class="nowrap" href="{{ url_for('admin.application', admission_id=a.id) }}">{{ a.application_no }}</a><span class="sub">{{ a.created_at|ist }}</span></td>
+            <td>{{ a.full_name }}<span class="sub">{{ a.email }} &middot; {{ a.phone }}</span></td>
+            <td>{{ a.course_code }}</td><td>{{ a.percentage }}%</td><td>{{ a.payment_status }}</td>
+            <td>{% if f %}{{ f.verified }}/{{ f.n }} verified{% if f.pending %}<span class="sub">{{ f.pending }} pending</span>{% endif %}{% if f.rejected %}<span class="sub bad">{{ f.rejected }} rejected</span>{% endif %}{% else %}<span class="muted">none</span>{% endif %}</td>
+            <td>{{ badge(a.status) }}</td>
+            <td><div class="actions">
+              <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.application', admission_id=a.id) }}">{{ icon('eye') }}<span class="sr-only">View {{ a.application_no }}</span></a>
+              <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.edit_application', admission_id=a.id) }}">{{ icon('edit') }}<span class="sr-only">Edit {{ a.application_no }}</span></a>
+            </div></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="empty">No applications match. {% if filters.values()|select|list %}<a href="{{ url_for('admin.applications') }}">Clear the filters</a>.{% endif %}</p>
+    {% endif %}
+    {% if pages > 1 %}
+    <nav class="pager" aria-label="Pages">
+      {% if page > 1 %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.applications', page=page-1, **filters) }}">Previous</a>{% else %}<span></span>{% endif %}
+      <span class="muted">Page {{ page }} of {{ pages }}</span>
+      {% if page < pages %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.applications', page=page+1, **filters) }}">Next</a>{% else %}<span></span>{% endif %}
+    </nav>
+    {% endif %}
+  </section>
+</form>
+{% endblock %}

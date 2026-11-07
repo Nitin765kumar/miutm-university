@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Pay {{ p.purpose|lower }}{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap">
+    <a class="back-link" href="{{ url_for('student.application', application_no=p.application_no) }}">{{ icon('arrow', 'flip') }}Back to the application</a>
+    <h1>{{ p.purpose }}</h1>
+    <p>{{ p.course_name }} &middot; {{ p.application_no }}</p>
+  </div>
+</section>
+<section class="section"><div class="wrap split split--even">
+  <div>
+    <div class="panel">
+      <p class="muted mb-0">Amount to pay</p>
+      <p class="pay-amount">{{ p.amount|inr }}</p>
+      <dl class="kv kv--small">
+        <dt>Order ID</dt><dd>{{ p.order_id }}</dd>
+        <dt>Status</dt><dd>{{ 'Paid' if p.status == 'Successful' else p.status }}</dd>
+        {% if p.transaction_id %}<dt>Transaction ID</dt><dd>{{ p.transaction_id }}</dd><dt>Payment ID</dt><dd>{{ p.payment_ref }}</dd><dt>Method</dt><dd>{{ p.method }}</dd><dt>Paid on</dt><dd>{{ p.paid_at|ist }}</dd>{% endif %}
+        {% if p.failure_reason and p.status == 'Failed' %}<dt>What happened</dt><dd>{{ p.failure_reason }}</dd>{% endif %}
+        {% if p.status == 'Refunded' %}<dt>Refund</dt><dd>{{ p.refund_reason }}</dd>{% endif %}
+      </dl>
+    </div>
+
+    {% if p.status == 'Successful' %}
+      <div class="alert alert--success mt-md">{{ icon('check') }}<span>Payment successful.{% if p.purpose == 'Application Fee' %} Your application has been submitted.{% else %} Your admission is approved.{% endif %}</span></div>
+      <div class="btn-row">
+        <a class="btn btn--gold" href="{{ url_for('student.payment_receipt', order_id=p.order_id) }}">{{ icon('download') }}Download receipt</a>
+        <a class="btn btn--navy" href="{{ url_for('student.application', application_no=p.application_no) }}">Go to my application</a>
+      </div>
+    {% elif p.status == 'Refunded' %}
+      <div class="alert alert--info mt-md">{{ icon('info') }}<span>This payment was refunded.</span></div>
+      <a class="btn btn--ghost" href="{{ url_for('student.payment_receipt', order_id=p.order_id) }}">{{ icon('download') }}Receipt</a>
+    {% elif p.status == 'Processing' %}
+      <div class="alert alert--info mt-md">{{ icon('info') }}<span>This payment is being processed. Refresh this page in a moment. You will not be charged twice.</span></div>
+    {% else %}
+      {% if p.status == 'Failed' %}<div class="alert alert--danger mt-md" role="alert">{{ icon('alert') }}<span><strong>Payment failed.</strong> Nothing was charged. You can try again; this will not create a second application.</span></div>{% endif %}
+      {% if verify_needed %}<div class="alert alert--warn mt-md">{{ icon('alert') }}<span>Confirm your email address before paying. Use the link we sent you, or <form class="inline-form" method="post" action="{{ url_for('student.resend_verification') }}">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">send it again</button></form>.</span></div>{% endif %}
+      <form class="form panel mt-md" method="post" action="{{ url_for('student.pay', order_id=p.order_id) }}">
+        {{ csrf() }}
+        <fieldset class="field fieldset-plain"><legend class="label">Payment method</legend>
+          <div class="seg">{% for m in methods %}<input type="radio" name="method" id="m-{{ loop.index }}" value="{{ m }}" {% if loop.first %}checked{% endif %}><label for="m-{{ loop.index }}">{{ m }}</label>{% endfor %}</div>
+        </fieldset>
+        <p class="hint">{% if simulate_ok %}This is a demonstration payment. No card or bank details are asked for and no money moves. On a live site this page hands over to the payment provider's secure page.{% else %}You will be taken through the payment provider's secure page.{% endif %}</p>
+        {% if simulate_ok %}<div class="check"><input type="checkbox" id="sim" name="simulate" value="fail"><label for="sim">Simulate a failed payment (to see what a failure looks like)</label></div>{% endif %}
+        <div class="btn-row">
+          <button class="btn btn--gold" type="submit" data-once data-loading="Processing payment..." {% if verify_needed %}disabled{% endif %}>Pay {{ p.amount|inr }}</button>
+        </div>
+      </form>
+      <form method="post" action="{{ url_for('student.cancel_payment', order_id=p.order_id) }}" class="mt-md" data-confirm="Cancel this payment? Your application stays saved.">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Cancel payment</button></form>
+    {% endif %}
+  </div>
+  <div>
+    <h2>History</h2>
+    <ol class="timeline">{% for e in events %}<li><time>{{ e.created_at|ist }}</time><strong>{{ e.status }}</strong>{% if e.note %}<p>{{ e.note }}</p>{% endif %}</li>{% endfor %}</ol>
+    <p class="small muted">Fees are explained on the <a href="{{ url_for('fees') }}">fee structure</a> page. See the <a href="{{ url_for('refund_policy') }}">refund policy</a>.</p>
+  </div>
+</div></section>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Admissions {{ cycle.session }}{% endblock %}
+{% block description %}How to apply to {{ site.short }} for {{ cycle.session }}: dates, eligibility, documents and answers to common questions.{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap">
+    <h1>Admissions {{ cycle.session }}</h1>
+    <p>Everything you need before you apply: the dates, who is eligible, what to keep ready and what happens next.</p>
+    <div class="btn-row mt-lg">
+      {% if adm_state == 'open' %}
+        <a class="btn btn--gold" href="{{ url_for('apply') }}">Start your application {{ icon('arrow') }}</a>
+      {% elif adm_state == 'upcoming' %}
+        <span class="alert alert--info mb-0">{{ icon('info') }}<span>Applications are not open yet. See the dates below.</span></span>
+      {% else %}
+        <span class="alert alert--warn mb-0">{{ icon('alert') }}<span>Applications for {{ cycle.session }} are closed.</span></span>
+      {% endif %}
+      <a class="btn btn--line" href="{{ url_for('track') }}">Track an application</a>
+      <a class="btn btn--ghost" href="{{ url_for('scholarships') }}">Scholarships</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head"><h2>Key dates</h2></div>
+    <ol class="dates">
+      {% for m in timeline %}
+      <li data-state="{{ m.state }}">
+        {% if m.state == 'next' %}<span class="d-tag">Next</span>{% endif %}
+        <time datetime="{{ m.date.isoformat() }}">{{ m.date|dmy }}</time>
+        <span class="d-label">{{ m.label }}</span>
+        <span class="d-note">{{ m.note }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="section section--paper">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Eligibility at a glance</h2>
+      <p>The application form checks these rules for you. Full details are on each programme page.</p>
+    </div>
+    <ul class="prog-list">
+      {% for c in courses %}
+      <li class="prog">
+        <div>
+          <h3><a href="{{ url_for('programme_detail', slug=c.slug) }}">{{ c.name }}</a></h3>
+          <p class="sub">{{ c.eligibility }}</p>
+        </div>
+        <dl><dt>Duration</dt><dd>{{ c.duration }}</dd></dl>
+        <dl><dt>Minimum marks</dt><dd>{{ (c.min_percent ~ '%') if c.min_percent else 'None' }}</dd></dl>
+        <dl><dt>Fee</dt><dd>{{ c.fee|inr }}</dd></dl>
+        <span></span>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split">
+    <div>
+      <h2>Keep these ready</h2>
+      <p>You only type your details online. Documents are checked in person at counselling, so nothing is uploaded.</p>
+      <ul>
+        <li>Class 10 and class 12 marksheets</li>
+        <li>Degree or diploma marksheets, for postgraduate and diploma programmes</li>
+        <li>A photo identity document</li>
+        <li>Recent passport-size photographs</li>
+        <li>Category certificate, if you claim a reserved seat</li>
+        <li>Transfer or migration certificate from your last institution</li>
+      </ul>
+    </div>
+    <div>
+      <h2>Fees and scholarships</h2>
+      <p>Each programme page shows its fee. Merit, sports, economically weaker section and girl-child scholarships are available; amounts and eligibility are published with the prospectus.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--paper">
+  <div class="wrap">
+    <div class="section-head"><h2>Common questions</h2></div>
+    <div class="faq prose">
+      {% for f in faqs %}<details><summary>{{ f.question }}</summary><div>{{ f.answer }}</div></details>{% else %}<p class="muted">No questions yet.</p>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

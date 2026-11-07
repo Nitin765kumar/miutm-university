@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Fee structure{% endblock %}
+{% block description %}Programme, admission and application fees at {{ site.short }} for {{ cycle.session }}.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap"><h1>Fee structure {{ cycle.session }}</h1><p>What each programme costs, and when you pay.</p>
+    <div class="btn-row mt-md"><a class="btn btn--navy" href="{{ url_for('fees_pdf') }}">{{ icon('download') }}Download fee structure PDF</a></div></div>
+</section>
+<section class="section">
+  <div class="wrap">
+    <div class="table-scroll"><table class="syl syl--wide">
+      <thead><tr><th>Programme</th><th>Duration</th><th>Programme fee</th><th>Admission fee</th></tr></thead>
+      <tbody>{% for c in courses %}<tr>
+        <td><a href="{{ url_for('programme_detail', slug=c.slug) }}">{{ c.name }}</a><br><small class="muted">{{ c.level }}</small></td>
+        <td>{{ c.duration }}</td><td>{{ c.fee|inr }} <small class="muted">{{ c.fee_period }}</small></td>
+        <td>{{ c.admission_fee|inr if c.admission_fee else 'None' }}</td></tr>{% endfor %}</tbody>
+    </table></div>
+    <div class="values mt-lg">
+      <div><h3>Application fee</h3><p>{{ app_fee|inr if app_fee else 'None' }}, paid once for each application. Your application is submitted when it is paid.</p></div>
+      <div><h3>Admission fee</h3><p>Paid after you are selected on merit. It secures your seat and approves your admission.</p></div>
+      <div><h3>Refunds</h3><p>See the <a href="{{ url_for('refund_policy') }}">refund and cancellation policy</a>. Scholarships are on the <a href="{{ url_for('scholarships') }}">scholarships page</a>.</p></div>
+    </div>
+    {% if demo_mode %}<p class="fine">Fees are sample figures. Payments on this site are a demonstration: no money is charged.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

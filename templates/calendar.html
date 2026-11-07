@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Academic calendar{% endblock %}
+{% block description %}Admission schedule and indicative academic calendar for the {{ cycle.session }} session at {{ site.short }}.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-gate"><div class="wrap"><h1>Academic calendar {{ cycle.session }}</h1><p>Admission dates first, then the indicative terms for the session.</p></div></section>
+<section class="section">
+  <div class="wrap">
+    <h2 id="schedule">Admission schedule</h2>
+    <ol class="dates">
+      {% for m in timeline %}
+      <li data-state="{{ m.state }}">{% if m.state == 'next' %}<span class="d-tag">Next</span>{% endif %}<time datetime="{{ m.date.isoformat() }}">{{ m.date|dmy }}</time><span class="d-label">{{ m.label }}</span><span class="d-note">{{ m.note }}</span></li>
+      {% endfor %}
+    </ol>
+    <h2 class="mt-lg">Terms</h2>
+    <p class="muted">Term dates are worked out from the first day of classes and are indicative. The registrar confirms the final dates each session.</p>
+    <div class="values">
+      {% for term, items in terms %}
+      <div><h3>{{ term }}</h3><ul class="plain">{% for label, d in items %}<li><strong>{{ d|dmy }}</strong> {{ label }}</li>{% endfor %}</ul></div>
+      {% endfor %}
+    </div>
+    {% if events %}
+    <h2 class="mt-lg">Upcoming events</h2>
+    <ul class="rows">{% for e in events %}<li><strong>{{ e.title }}</strong><span>{{ e.starts_on|dmy }}{% if e.ends_on %} to {{ e.ends_on|dmy }}{% endif %}{% if e.location %} &middot; {{ e.location }}{% endif %}</span></li>{% endfor %}</ul>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

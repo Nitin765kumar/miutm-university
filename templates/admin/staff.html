@@ -1,0 +1,41 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Staff accounts{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Staff accounts</h1><p>{% if signup_code_on %}Staff registration needs the access code. {% endif %}Administrators can do everything. Reviewers can review applications and documents and answer messages, but cannot delete, run merit lists, change content or manage staff.</p></div>
+  <a class="btn btn--navy btn--sm" href="{{ url_for('admin.staff_new') }}">{{ icon('users') }}Add staff</a></div>
+{% if pending %}
+<section class="card card--attention">
+  <h2>Waiting for approval ({{ pending|length }})</h2>
+  <p class="muted">These people registered from the public Admin register page. Nothing works for them until you approve.</p>
+  {% for u in pending %}
+  <div class="pending-row">
+    <div><strong>{{ u.full_name }}</strong><span class="sub">{{ u.username }} &middot; {{ u.email }} &middot; asked {{ u.created_at|ist }}</span></div>
+    <div class="actions">
+      <form class="inline-reset" method="post" action="{{ url_for('admin.staff_approve', uid=u.id) }}">
+        {{ csrf() }}<label class="sr-only" for="role{{ u.id }}">Role for {{ u.username }}</label>
+        <select class="select" id="role{{ u.id }}" name="role">{% for key, label in roles.items() %}<option value="{{ key }}" {% if key == 'reviewer' %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+        <button class="btn btn--navy btn--sm" type="submit">Approve</button></form>
+      <form method="post" action="{{ url_for('admin.staff_reject', uid=u.id) }}" data-confirm="Decline and remove the registration from {{ u.username }}?">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Decline</button></form>
+    </div>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
+<section class="card">
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Name</th><th>Role</th><th>Last login</th><th>Account</th><th><span class="sr-only">Actions</span></th></tr></thead>
+    <tbody>{% for u in rows %}<tr>
+      <td>{{ u.full_name or u.username }}<span class="sub">{{ u.username }}{% if u.email %} &middot; {{ u.email }}{% endif %}</span></td>
+      <td>{{ roles.get(u.role, u.role) }}</td><td>{{ u.last_login|ist if u.last_login else 'Never' }}</td>
+      <td><span class="badge badge--{{ 'approved' if u.is_active else 'cancelled' }}">{{ 'Active' if u.is_active else 'Disabled' }}</span></td>
+      <td><div class="actions">
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.staff_edit', uid=u.id) }}">Edit</a>
+        <form class="inline-reset" method="post" action="{{ url_for('admin.staff_reset', uid=u.id) }}" data-confirm="Set a new password for {{ u.username }}?">
+          {{ csrf() }}<label class="sr-only" for="spw{{ u.id }}">New password for {{ u.username }}</label>
+          <input class="input" id="spw{{ u.id }}" name="password" type="text" placeholder="New password" autocomplete="off" required minlength="10">
+          <button class="btn btn--ghost btn--sm" type="submit">Reset</button></form>
+      </div></td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endblock %}

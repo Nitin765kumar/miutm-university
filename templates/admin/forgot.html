@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex, nofollow">
+<title>Staff password reset | {{ site.short }}</title>
+<link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="{{ asset('css/site.css') }}"><link rel="stylesheet" href="{{ asset('css/admin.css') }}"><script src="{{ asset('js/boot.js') }}"></script></head>
+<body class="admin-body">
+{% from "partials/_macros.html" import icon, field, csrf %}
+<main class="login-wrap" id="main"><div class="login-card">
+  <a class="brand" href="{{ url_for('index') }}"><img src="{{ asset('img/logo-sm.webp') }}" width="52" height="52" alt=""><span class="brand-text"><span class="brand-name">{{ site.short }}</span><span class="brand-sub">Staff area</span></span></a>
+  <h1>Forgot your password?</h1>
+  {% if not email_on %}
+    <div class="callout"><p><strong>Email is not set up on this server</strong>, so a reset link cannot be sent. Ask an administrator to reset your password under Staff accounts. An administrator who is locked out can run <code>flask --app app create-admin USERNAME</code> on the server.</p></div>
+  {% elif sent %}
+    <div class="alert alert--success">{{ icon('check') }}<span>If that username has an email address on file, a reset link is on its way. It works once and expires in an hour.</span></div>
+  {% else %}
+    <form class="form" method="post" action="{{ url_for('admin.forgot') }}">
+      {{ csrf() }}{{ field('username', 'Username', {}, {}, maxlength='60', autocomplete='username') }}
+      <button class="btn btn--navy" type="submit" data-once>Send reset link</button>
+    </form>
+  {% endif %}
+  <p class="small mt-md mb-0"><a href="{{ url_for('admin.login') }}">Back to sign in</a></p>
+</div></main>
+{% include "partials/_sprite.html" %}<script src="{{ asset('js/main.js') }}" defer></script></body></html>

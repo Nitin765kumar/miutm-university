@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Programmes{% endblock %}
+{% block description %}All {{ courses|length }} programmes: degrees, diplomas and certificates in computing, AI, cyber security and management. Compare duration, fees and seats.{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-lab">
+  <div class="wrap">
+    <h1>Programmes</h1>
+    <p>{{ courses|length }} programmes from six-month certificates to postgraduate degrees. Filter by level or school, or search by name.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="filters">
+      <div class="field">
+        <label for="prog-q">Search programmes</label>
+        <input class="input" id="prog-q" type="search" placeholder="For example: python, MBA, security" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="prog-school">School</label>
+        <select class="select" id="prog-school">
+          <option value="">All schools</option>
+          {% for s in courses|map(attribute='school')|unique %}<option value="{{ s }}">{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <fieldset class="field span-2 filter-levels">
+        <legend class="label">Level</legend>
+        <div class="chips">
+          <input type="radio" name="level" id="lv-all" value="" checked><label for="lv-all">All</label>
+          {% for l in levels %}
+          <input type="radio" name="level" id="lv-{{ loop.index }}" value="{{ l }}"><label for="lv-{{ loop.index }}">{{ l }}</label>
+          {% endfor %}
+        </div>
+      </fieldset>
+    </div>
+
+    <p class="muted" id="prog-count" aria-live="polite">{{ courses|length }} programmes</p>
+    <ul class="prog-list" data-filter-list>
+      {% for c in courses %}
+      <li class="prog" data-level="{{ c.level }}" data-school="{{ c.school }}"
+          data-text="{{ (c.name ~ ' ' ~ c.code ~ ' ' ~ c.school ~ ' ' ~ c.topics ~ ' ' ~ c.level)|lower }}">
+        <div>
+          <h3><a href="{{ url_for('programme_detail', slug=c.slug) }}">{{ c.name }}</a></h3>
+          <p class="sub">{{ c.level }} &middot; {{ c.school }}</p>
+        </div>
+        <dl><dt>Duration</dt><dd>{{ c.duration }}</dd></dl>
+        <dl><dt>Fee</dt><dd>{{ c.fee|inr }} <small class="muted">{{ c.fee_period }}</small></dd></dl>
+        <dl><dt>Seats</dt><dd>{{ c.seats }}</dd></dl>
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('programme_detail', slug=c.slug) }}">View details</a>
+      </li>
+      {% endfor %}
+    </ul>
+    <p class="prog-empty" id="prog-none" hidden>No programme matches your search. Clear a filter or <a href="{{ url_for('contact') }}">ask the admissions office</a>.</p>
+    {% if demo_mode %}<p class="fine">Fees and seats shown here are illustrative.</p>{% endif %}
+  </div>
+</section>
+{% endblock %}

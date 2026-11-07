@@ -1,0 +1,43 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>Messages</h1><p>From the contact form. {{ unread }} unread.</p></div></div>
+<div class="tabs" role="navigation" aria-label="Filter">
+  <a href="{{ url_for('admin.messages') }}" {% if show != 'unread' %}aria-current="page"{% endif %}>All</a>
+  <a href="{{ url_for('admin.messages', show='unread') }}" {% if show == 'unread' %}aria-current="page"{% endif %}>Unread</a>
+</div>
+<section class="card">
+  {% for m in rows %}
+  <article class="msg {% if not m.is_read %}is-unread{% endif %}">
+    <div class="msg-head"><span class="msg-subject">{{ m.subject }}</span><span class="meta">{{ m.created_at|ist }}</span></div>
+    <p class="meta mb-0">{{ m.name }} &middot; <a href="mailto:{{ m.email }}">{{ m.email }}</a>{% if m.phone %} &middot; {{ m.phone }}{% endif %} &middot; to {{ m.department }}</p>
+    <div class="msg-body">{{ m.message }}</div>
+    <div class="actions">
+      <a class="btn btn--ghost btn--sm" href="mailto:{{ m.email }}?subject={{ ('Re: ' ~ m.subject)|urlencode }}">{{ icon('mail') }}Reply</a>
+      <form method="post" action="{{ url_for('admin.message_read', message_id=m.id) }}">
+        {{ csrf() }}<input type="hidden" name="state" value="{{ 0 if m.is_read else 1 }}"><input type="hidden" name="show" value="{{ show }}">
+        <button class="btn btn--ghost btn--sm" type="submit">{{ 'Mark unread' if m.is_read else 'Mark read' }}</button>
+      </form>
+      {% if staff.role == 'admin' %}
+      <form method="post" action="{{ url_for('admin.message_delete', message_id=m.id) }}" data-confirm="Delete this message permanently?">
+        {{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">{{ icon('trash') }}Delete</button>
+      </form>
+      {% endif %}
+    </div>
+    {% if m.reply %}<div class="msg-reply"><span class="meta">Replied {{ m.replied_at|ist }}</span><div class="msg-body">{{ m.reply }}</div></div>
+    {% elif email_on %}
+    <details class="reply-box"><summary>Reply by email</summary>
+      <form class="form" method="post" action="{{ url_for('admin.message_reply', message_id=m.id) }}">
+        {{ csrf() }}<label class="sr-only" for="rp{{ m.id }}">Reply to {{ m.name }}</label>
+        <textarea class="textarea" id="rp{{ m.id }}" name="reply" rows="4" maxlength="3000" required></textarea>
+        <div><button class="btn btn--navy btn--sm" type="submit" data-once>Send reply</button></div>
+      </form>
+    </details>
+    {% endif %}
+  </article>
+  {% else %}
+  <p class="empty">{{ 'No unread messages.' if show == 'unread' else 'No messages yet.' }}</p>
+  {% endfor %}
+</section>
+{% endblock %}

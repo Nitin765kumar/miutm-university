@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, csrf %}
+{% block title %}Add an earlier application{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Add an earlier application</h1><p>Applied before creating an account? Link that application to this one.</p></div></section>
+<section class="section"><div class="wrap">
+  {% include "student/_tabs.html" %}
+  {% if error %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>{{ error }}</span></div>{% endif %}
+  <form class="form panel narrow" method="post" action="{{ url_for('student.claim') }}">
+    {{ csrf() }}
+    {{ field('application_no', 'Application number', {}, {}, placeholder='MIUTM-2026-123456', autocomplete='off', maxlength='24') }}
+    {{ field('dob', 'Date of birth on the application', {}, {}, type='date') }}
+    <div><button class="btn btn--navy" type="submit" data-once>Add to my account</button></div>
+  </form>
+</div></section>
+{% endblock %}

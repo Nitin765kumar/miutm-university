@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Documents required{% endblock %}
+{% block description %}The documents to upload when you apply to {{ site.short }}, and the originals to bring to counselling.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-library"><div class="wrap"><h1>Documents required</h1><p>What to upload, and what to bring.</p></div></section>
+<section class="section"><div class="wrap">
+  <div class="values">
+    <div><h3>After class 12</h3><ul class="plain">{% for d in base %}<li>{{ d }}</li>{% endfor %}</ul></div>
+    <div><h3>If you hold a diploma or degree</h3><ul class="plain">{% for d in degree %}<li>{{ d }}</li>{% endfor %}</ul></div>
+    <div><h3>If you claim a reserved category</h3><ul class="plain">{% for d in category %}<li>{{ d }}</li>{% endfor %}</ul></div>
+  </div>
+  <h2 class="mt-lg">Rules for uploads</h2>
+  <ul><li>PDF, JPG or PNG only, up to 2 MB per file, one file for each document.</li><li>Scans must be clear and complete. Unclear documents are sent back with a reason and you can upload them again.</li><li>A document that has been verified cannot be replaced.</li><li>Uploads are optional while you apply, but the office cannot finish checking without them.</li></ul>
+  <h2 class="mt-lg">At counselling</h2>
+  <p>Bring the originals of every document you uploaded, a photo identity document, and passport-size photographs. Admission is confirmed after the originals are verified.</p>
+  <h2 class="mt-lg">Eligibility by programme</h2>
+  <ul class="rows">{% for c in courses %}<li><strong><a href="{{ url_for('programme_detail', slug=c.slug) }}">{{ c.name }}</a></strong><span>{{ c.eligibility }}</span></li>{% endfor %}</ul>
+</div></section>
+{% endblock %}

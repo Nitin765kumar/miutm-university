@@ -1,0 +1,31 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}{{ p.order_id }}{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>{{ p.purpose }}: {{ p.amount|inr }}</h1><p>{{ p.order_id }} &middot; {{ p.status }}</p></div>
+  <div class="btn-row"><a class="btn btn--ghost btn--sm" href="{{ url_for('admin.payments_list') }}">Back to payments</a>
+  {% if p.status in ('Successful', 'Refunded') %}<a class="btn btn--ghost btn--sm" href="{{ url_for('admin.payment_receipt', payment_id=p.id) }}">{{ icon('download') }}Receipt PDF</a>{% endif %}</div></div>
+<div class="cols">
+  <section class="card"><h2>Details</h2>
+    <dl class="kv">
+      <dt>Student</dt><dd><a href="{{ url_for('admin.application', admission_id=p.admission_id) }}">{{ p.full_name }}</a> ({{ p.application_no }})</dd>
+      <dt>Programme</dt><dd>{{ p.course_code }}</dd><dt>Purpose</dt><dd>{{ p.purpose }}</dd><dt>Amount</dt><dd>{{ p.amount|inr }} ({{ p.currency }})</dd>
+      <dt>Method</dt><dd>{{ p.method or '-' }}</dd><dt>Status</dt><dd>{{ p.status }}</dd><dt>Attempts</dt><dd>{{ p.attempts }}</dd>
+      <dt>Transaction ID</dt><dd>{{ p.transaction_id or '-' }}</dd><dt>Payment ID</dt><dd>{{ p.payment_ref or '-' }}</dd>
+      <dt>Created</dt><dd>{{ p.created_at|ist }}</dd><dt>Paid</dt><dd>{{ p.paid_at|ist if p.paid_at else '-' }}</dd>
+      {% if p.failure_reason %}<dt>Last failure</dt><dd>{{ p.failure_reason }}</dd>{% endif %}
+      {% if p.refunded_at %}<dt>Refunded</dt><dd>{{ p.refunded_at|ist }}: {{ p.refund_reason }}</dd>{% endif %}
+    </dl>
+    {% if p.status == 'Successful' and staff.role == 'admin' %}
+    <h3>Refund</h3>
+    <form class="form" method="post" action="{{ url_for('admin.payment_refund', payment_id=p.id) }}" data-confirm="Mark this payment as refunded?">
+      {{ csrf() }}
+      <div class="field"><label for="reason">Reason for the refund</label><input class="input" id="reason" name="reason" required minlength="5" maxlength="300"><p class="hint">Recorded here only. Return the money through the payment provider.</p></div>
+      <div><button class="btn btn--danger" type="submit">Mark as refunded</button></div>
+    </form>
+    {% endif %}
+  </section>
+  <section class="card"><h2>History</h2>
+    <ol class="timeline">{% for e in events %}<li><time>{{ e.created_at|ist }}</time><strong>{{ e.status }}</strong>{% if e.note %}<p>{{ e.note }}</p>{% endif %}</li>{% endfor %}</ol></section>
+</div>
+{% endblock %}

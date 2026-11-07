@@ -1,0 +1,32 @@
+{# Provisional offer of admission. Needs: a, course, counselling, classes_begin, docs_needed #}
+<article class="sheet letter" aria-label="Offer letter {{ a.application_no }}">
+  <header class="sheet-head letter-head">
+    <img src="{{ asset('img/logo-sm.webp') }}" width="72" height="72" alt="">
+    <div class="sheet-title">
+      <p class="sheet-uni">{{ site.name }}</p>
+      <p class="sheet-addr">{{ site.address|join(', ') }} &middot; {{ site.phone }}</p>
+    </div>
+  </header>
+  <p class="letter-meta"><span>Ref: {{ a.application_no }}</span><span>Date: {{ a.updated_at|dmy }}</span></p>
+  <h2 class="letter-title">Provisional offer of admission</h2>
+  <p>Dear {{ a.full_name }},</p>
+  <p>We are pleased to tell you that your application for <strong>{{ a.course_name }}</strong> for the {{ cycle.session }} session has been approved, and we offer you a provisional place.</p>
+  <dl class="sheet-grid letter-facts">
+    <div><dt>Programme</dt><dd>{{ a.course_name }}</dd></div>
+    <div><dt>Duration</dt><dd>{{ course.duration if course else '' }}</dd></div>
+    <div><dt>Fee</dt><dd>{% if course %}{{ course.fee|inr }} {{ course.fee_period }}{% endif %}</dd></div>
+    {% if counselling %}<div><dt>Counselling from</dt><dd>{{ counselling|dmy }}</dd></div>{% endif %}
+    {% if classes_begin %}<div><dt>Classes begin</dt><dd>{{ classes_begin|dmy }}</dd></div>{% endif %}
+    <div><dt>Status</dt><dd>{{ a.status }}</dd></div>
+  </dl>
+  <p><strong>To confirm your seat</strong>, attend counselling with the original documents below. This offer is provisional and depends on document verification and payment of the fee as instructed at counselling.</p>
+  <ul class="letter-docs">
+    {% for d in docs_needed %}<li>{{ d }}</li>{% endfor %}
+    <li>This letter</li>
+  </ul>
+  <p>We look forward to welcoming you to {{ site.short }}.</p>
+  <p class="letter-sign">Registrar<br>{{ site.name }}</p>
+  <footer class="sheet-foot">
+    <p>This is a computer-generated letter.{% if demo_mode %} {{ site.demo_notice }}{% endif %}</p>
+  </footer>
+</article>

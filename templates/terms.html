@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Terms of use{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap"><h1>Terms of use</h1><p>The basic rules for using this website.</p></div></section>
+<section class="section"><div class="wrap prose">
+  {% if demo_mode %}<div class="callout"><p>{{ site.demo_notice }}</p></div>{% endif %}
+  <h2>Using the site</h2>
+  <p>You may browse the site and apply for programmes. Give accurate information. Do not try to break, overload or gain unauthorised access to the site or its data.</p>
+  <h2>Applications</h2>
+  <p>Submitting an application does not guarantee admission. Admission depends on eligibility, merit and seat availability, and is confirmed only after document verification at counselling. False information can lead to cancellation.</p>
+  <h2>Content</h2>
+  <p>Programme details, fees and dates may change. The admissions office confirms final information.</p>
+  <h2>Contact</h2>
+  <p>Questions about these terms: <a href="mailto:{{ departments[0].email }}">{{ departments[0].email }}</a>.</p>
+</div></section>
+{% endblock %}

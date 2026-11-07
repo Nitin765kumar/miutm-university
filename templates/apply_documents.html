@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}Upload documents{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap">
+    <a class="back-link" href="{{ url_for('apply', step=2) }}">{{ icon('arrow', 'flip') }}Back to details</a>
+    <h1>Upload your documents</h1>
+    <p>For {{ course.name }}. PDF, JPG or PNG, up to 2 MB each. You can also add them later from your dashboard.</p>
+  </div>
+</section>
+<section class="section">
+  <div class="wrap apply-layout">
+    <div>
+      {% set current = 4 %}
+      {% include "partials/_apply_steps.html" %}
+
+      <form class="form" method="post" enctype="multipart/form-data" action="{{ url_for('apply_documents') }}">
+        {{ csrf() }}
+        <ul class="docs">
+          {% for idx, kind in kinds %}
+          {% set d = docs.get(kind) %}
+          <li class="doc">
+            <div class="doc-main">
+              <strong>{{ kind }}</strong> {% if kind in need %}<span class="req-tag">Required</span>{% else %}<span class="opt-tag">Optional</span>{% endif %}
+              {% if d %}<p class="doc-file"><a href="{{ url_for('apply_doc_download', doc_id=d.id) }}">{{ d.filename }}</a> <span class="muted">({{ [1, (d.size / 1024)|round|int]|max }} KB)</span> <span class="badge badge--uploaded">Saved</span></p>
+              {% else %}<p class="muted mb-0">Not added yet.</p>{% endif %}
+            </div>
+            <div class="doc-form">
+              <label class="sr-only" for="file-{{ idx }}">{{ 'Replace' if d else 'Choose' }} file for {{ kind }}</label>
+              <input class="input input--file" id="file-{{ idx }}" type="file" name="file-{{ idx }}" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+              {% if d %}<button class="btn btn--ghost btn--sm" type="submit" form="rm-{{ d.id }}">Remove</button>{% endif %}
+            </div>
+          </li>
+          {% endfor %}
+        </ul>
+        <p class="hint">Choose the files you have, then press <strong>Save</strong>. Press <strong>Next</strong> to save and go to the review.</p>
+
+        <div class="form-actions">
+          <div class="form-actions-left">
+            <a class="btn btn--ghost" href="{{ url_for('apply', step=2) }}">Back</a>
+            <a class="btn btn--ghost" href="{{ url_for('student.dashboard') }}" data-leave="Leave without continuing? Your draft and saved documents stay in your dashboard.">Cancel</a>
+          </div>
+          <div class="form-actions-right">
+            <button class="btn btn--line" type="submit" name="go" value="stay" data-once>Save</button>
+            <button class="btn btn--gold" type="submit" name="go" value="review" data-once>Next: review {{ icon('arrow') }}</button>
+          </div>
+        </div>
+      </form>
+      {% for idx, kind in kinds %}{% set d = docs.get(kind) %}{% if d %}
+      <form id="rm-{{ d.id }}" method="post" action="{{ url_for('apply_doc_delete', doc_id=d.id) }}" data-confirm="Remove {{ kind }}?">{{ csrf() }}</form>
+      {% endif %}{% endfor %}
+    </div>
+
+    <aside class="aside-card" aria-label="Documents">
+      <h2>Why upload now?</h2>
+      <ul>
+        <li>The office can start checking as soon as you submit.</li>
+        <li>You only have to bring originals once, at counselling.</li>
+        <li>Skipping is fine. Missing documents show on your dashboard.</li>
+      </ul>
+      <p class="small muted">Your files are private. Only you and admission staff can open them.</p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, select, textarea, csrf, honeypot %}
+{% block title %}Contact{% endblock %}
+{% block description %}Contact {{ site.short }}: send a message to a department, call, or visit the campus in Ayodhya.{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-library">
+  <div class="wrap">
+    <h1>Contact us</h1>
+    <p>Choose the department that fits your question. We reply within two working days.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap contact-layout">
+    <div>
+      {% if errors %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>Some answers need fixing. The fields are marked below.</span></div>{% endif %}
+      <form class="form panel" method="post" action="{{ url_for('contact') }}">
+        {{ csrf() }}{{ honeypot() }}
+        <div class="form-grid">
+          {{ field('name', 'Your name', values, errors, maxlength='80', autocomplete='name') }}
+          {{ field('email', 'Email address', values, errors, type='email', maxlength='120', autocomplete='email') }}
+          {{ field('phone', 'Mobile number', values, errors, type='tel', required=False, optional_text=True, pattern='[6-9][0-9]{9}', maxlength='10', inputmode='numeric', title='10-digit mobile number') }}
+          {{ select('department', 'Send to', departments|map(attribute='key')|list, values, errors, placeholder='Choose a department') }}
+          {{ field('subject', 'Subject', values, errors, span2=True, maxlength='120') }}
+          {{ textarea('message', 'Message', values, errors, rows=6, hint='Include your application number if you have one.') }}
+        </div>
+        <div><button class="btn btn--navy" type="submit" data-once>Send message</button></div>
+      </form>
+    </div>
+
+    <div>
+      <h2>Visit or call</h2>
+      <address class="contact-lines">
+        <span>{{ icon('pin') }}<span>{{ site.address|join(', ') }}<br><a href="{{ site.maps_url }}" rel="noopener" target="_blank">Open in Maps</a></span></span>
+        <span>{{ icon('phone') }}<span><a href="tel:{{ site.phone|replace(' ', '') }}">{{ site.phone }}</a><br><a href="tel:{{ site.phone_alt|replace(' ', '') }}">{{ site.phone_alt }}</a></span></span>
+        <span>{{ icon('clock') }}<span>{{ site.hours }}</span></span>
+      </address>
+      <h2>Departments</h2>
+      <ul class="dir">
+        {% for d in departments %}
+        <li><strong>{{ d.key }}</strong><span>{{ d.about }}</span><a href="mailto:{{ d.email }}">{{ d.email }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

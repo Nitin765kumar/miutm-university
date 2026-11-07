@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, csrf %}
+{% block title %}Forgot password{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Forgot your password?</h1></div></section>
+<section class="section"><div class="wrap prose">
+  {% if not email_on %}
+    <div class="callout"><p><strong>Email is not set up on this server</strong>, so a reset link cannot be sent.</p>
+    <p>Ask the admissions office to set a temporary password for you. Write to <a href="mailto:{{ departments[0].email }}">{{ departments[0].email }}</a> or use the <a href="{{ url_for('support') }}">help form</a>.</p></div>
+  {% elif sent %}
+    <div class="alert alert--success">{{ icon('check') }}<span>If that email has an account, a reset link is on its way. It works once and expires in an hour.</span></div>
+  {% else %}
+    <form class="form panel" method="post" action="{{ url_for('student.forgot') }}">
+      {{ csrf() }}
+      {{ field('email', 'Email address', {}, {}, type='email', maxlength='120') }}
+      <div><button class="btn btn--navy" type="submit" data-once>Send reset link</button></div>
+    </form>
+  {% endif %}
+  <p class="mt-md"><a href="{{ url_for('student.login') }}">Back to login</a></p>
+</div></section>
+{% endblock %}

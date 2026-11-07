@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}{{ a.application_no }}{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students">
+  <div class="wrap">
+    <a class="back-link" href="{{ url_for('student.dashboard') }}">{{ icon('arrow', 'flip') }}Back to my dashboard</a>
+    <h1>{{ a.course_name }}</h1>
+    <p>{{ a.application_no }} &middot; {{ a.session or '' }} &middot; created {{ a.created_at|ist }}</p>
+  </div>
+</section>
+<section class="section"><div class="wrap dash">
+  <div>
+    <div class="panel">
+      <p>{{ badge(a.status) }} <span class="muted">Payment: {{ a.payment_status }}</span></p>
+      <p>{{ status_help.get(a.status, '') }}</p>
+      {% if a.status == 'Rejected' and a.rejection_reason %}<div class="alert alert--danger">{{ icon('alert') }}<span><strong>Reason:</strong> {{ a.rejection_reason }}</span></div>{% endif %}
+      <p class="appcard-next"><strong>Next:</strong> {{ status_next.get(a.status, '') }}</p>
+      <div class="btn-row">
+        {% for p in payments %}{% if p.status in ('Pending', 'Failed', 'Cancelled', 'Processing') %}
+          <a class="btn btn--gold" href="{{ url_for('student.payment', order_id=p.order_id) }}">{{ 'Try payment again' if p.status == 'Failed' else 'Pay' }} {{ p.purpose|lower }} ({{ p.amount|inr }})</a>
+        {% endif %}{% endfor %}
+        {% if can_pay_admission %}
+        <form method="post" action="{{ url_for('student.start_admission_fee', application_no=a.application_no) }}">{{ csrf() }}<button class="btn btn--gold" type="submit">Pay admission fee ({{ a.admission_fee|inr }})</button></form>
+        {% endif %}
+        {% if has_letter %}<a class="btn btn--navy" href="{{ url_for('student.admission_letter', application_no=a.application_no) }}">{{ icon('download') }}Admission letter (PDF)</a>{% endif %}
+        {% if a.status == 'Admission Confirmed' %}<a class="btn btn--navy" href="{{ url_for('student.confirmation_letter', application_no=a.application_no) }}">{{ icon('download') }}Confirmation letter (PDF)</a>{% endif %}
+      </div>
+      <div class="btn-row mt-md">
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('student.application_receipt', application_no=a.application_no) }}">{{ icon('download') }}Application receipt</a>
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('student.print_form', application_no=a.application_no) }}" target="_blank" rel="noopener">{{ icon('printer') }}Print application form</a>
+        {% if can_edit %}<a class="btn btn--ghost btn--sm" href="{{ url_for('student.edit_application', application_no=a.application_no) }}">{{ icon('edit') }}Edit details</a>{% endif %}
+        {% if can_withdraw %}
+        <form method="post" action="{{ url_for('student.withdraw', application_no=a.application_no) }}" data-confirm="Withdraw this application? It will be cancelled and your place released.">
+          {{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Withdraw</button></form>
+        {% endif %}
+      </div>
+    </div>
+
+    <h2 class="mt-lg">Progress</h2>
+    <div class="panel">{% include "student/_timeline.html" %}</div>
+
+    <h2 id="documents" class="mt-lg">Documents</h2>
+    <p class="muted">PDF, JPG or PNG, up to 2 MB each. The office checks every document. If one is rejected, the reason is shown and you can upload a better copy.{% if not can_upload %} This application is closed, so uploads are switched off.{% endif %}</p>
+    <ul class="docs">
+      {% for kind in required + optional %}
+      {% set d = docs.get(kind) %}
+      <li class="doc">
+        <div class="doc-main">
+          <strong>{{ kind }}</strong> {% if kind in required %}<span class="req-tag">Required</span>{% else %}<span class="opt-tag">Optional</span>{% endif %}
+          {% if d %}
+            <p class="doc-file"><a href="{{ url_for('student.download_document', doc_id=d.id) }}">{{ d.filename }}</a> <span class="muted">({{ [1, (d.size / 1024)|round|int]|max }} KB)</span> {{ badge(d.status) }}</p>
+            {% if d.status == 'Rejected' and d.note %}<p class="doc-note">Rejected: {{ d.note }}</p>{% elif d.note %}<p class="muted small mb-0">Office note: {{ d.note }}</p>{% endif %}
+          {% else %}<p class="muted mb-0">Not uploaded yet.</p>{% endif %}
+        </div>
+        {% if can_upload and not (d and d.status == 'Verified') %}
+        <form class="doc-form" method="post" enctype="multipart/form-data" action="{{ url_for('student.upload_document', application_no=a.application_no) }}">
+          {{ csrf() }}<input type="hidden" name="doc_type" value="{{ kind }}">
+          <label class="sr-only" for="file-{{ loop.index }}">Choose file for {{ kind }}</label>
+          <input class="input input--file" id="file-{{ loop.index }}" type="file" name="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required data-maxmb="2">
+          <button class="btn btn--navy btn--sm" type="submit" data-once data-loading="Uploading...">{{ 'Upload again' if d else 'Upload' }}</button>
+        </form>
+        {% if d %}
+        <form method="post" action="{{ url_for('student.delete_document', application_no=a.application_no, doc_id=d.id) }}" data-confirm="Remove this document?">
+          {{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Remove</button></form>
+        {% endif %}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+
+    <h2 class="mt-lg">Payments</h2>
+    {% if payments %}
+    <div class="table-scroll"><table class="syl"><thead><tr><th>Purpose</th><th>Amount</th><th>Status</th><th>Transaction</th><th></th></tr></thead>
+      <tbody>{% for p in payments %}<tr><td>{{ p.purpose }}</td><td>{{ p.amount|inr }}</td><td>{{ 'Paid' if p.status == 'Successful' else p.status }}</td><td>{{ p.transaction_id or '-' }}</td>
+        <td>{% if p.status in ('Successful', 'Refunded') %}<a href="{{ url_for('student.payment_receipt', order_id=p.order_id) }}">Receipt</a>{% else %}<a href="{{ url_for('student.payment', order_id=p.order_id) }}">Open</a>{% endif %}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p class="muted">No fee payments for this application.</p>{% endif %}
+  </div>
+
+  <aside>
+    <div class="panel panel--paper">
+      <h2>History</h2>
+      <ol class="timeline">
+        {% for e in events %}<li><time>{{ e.created_at|ist }}</time><strong>{{ e.status }}</strong>{% if e.previous_status %} <span class="muted small">from {{ e.previous_status }}</span>{% endif %}
+          {% if e.changed_by %}<span class="muted small"> &middot; {{ e.changed_by }}</span>{% endif %}{% if e.note %}<p>{{ e.note }}</p>{% endif %}</li>{% endfor %}
+      </ol>
+    </div>
+    <div class="panel panel--paper mt-md">
+      <h2>Details</h2>
+      <dl class="kv kv--small">
+        <dt>Applicant</dt><dd>{{ a.full_name }}</dd>
+        <dt>Qualification</dt><dd>{{ a.qualification }}, {{ a.percentage }}%</dd>
+        {% if a.merit_rank %}<dt>Merit rank</dt><dd>{{ a.merit_rank }}</dd>{% endif %}
+        <dt>Contact</dt><dd>{{ a.email }}<br>{{ a.phone }}</dd>
+      </dl>
+    </div>
+  </aside>
+</div></section>
+{% endblock %}

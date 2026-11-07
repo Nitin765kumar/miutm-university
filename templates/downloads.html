@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Downloads{% endblock %}
+{% block description %}Download the prospectus, fee structure and programme syllabus PDFs from {{ site.short }}.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-library"><div class="wrap"><h1>Downloads</h1><p>Everything you may want to read offline.</p></div></section>
+<section class="section">
+  <div class="wrap">
+    <h2>University documents</h2>
+    <ul class="rows rows--wide">
+      <li><strong>Prospectus {{ cycle.session }}</strong><span>About the university, schools, programmes, how to apply, key dates and scholarships.</span><a href="{{ url_for('prospectus_pdf') }}">{{ icon('download') }} Download PDF</a></li>
+      <li><strong>Fee structure</strong><span>Programme, admission and application fees.</span><a href="{{ url_for('fees_pdf') }}">{{ icon('download') }} Download PDF</a></li>
+      <li><strong>Admission guidelines</strong><span>The rules and steps for applying.</span><a href="{{ url_for('guidelines') }}">Read online</a></li>
+      <li><strong>Academic calendar and admission schedule</strong><span>Admission dates and indicative term dates.</span><a href="{{ url_for('calendar') }}">Read online</a></li>
+      <li><strong>Refund and cancellation policy</strong><span>When fees are refunded.</span><a href="{{ url_for('refund_policy') }}">Read online</a></li>
+    </ul>
+    <h2 class="mt-lg">Programme syllabus</h2>
+    <ul class="rows rows--wide">
+      {% for c in courses %}
+      <li><strong>{{ c.code }}: {{ c.name }}</strong><span>{{ c.duration }}, semester-wise subjects with units.</span>
+        <span><a href="{{ url_for('syllabus_pdf', slug=c.slug) }}">{{ icon('download') }} PDF</a> &middot; <a href="{{ url_for('syllabus', slug=c.slug) }}">View online</a></span></li>
+      {% endfor %}
+    </ul>
+    <p class="muted mt-md">Students also get a receipt, an admission letter and a confirmation letter in their dashboard as their application moves forward.</p>
+  </div>
+</section>
+{% endblock %}

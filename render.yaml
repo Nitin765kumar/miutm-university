@@ -1,0 +1,54 @@
+# Render blueprint. Commit this file, then choose "New > Blueprint" on Render.
+#
+# DATA THAT SURVIVES RESTARTS NEEDS A DATABASE_URL.
+#   * Render's own FREE PostgreSQL is deleted after 30 days, so it is only good for a short trial.
+#   * For real use give DATABASE_URL a PostgreSQL address that lasts: Render's paid PostgreSQL, or a free
+#     permanent one from Neon or Supabase. See README, section "PostgreSQL".
+services:
+  - type: web
+    name: miutm-university
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --preload --workers 2 --threads 4 --timeout 60
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false        # paste the PostgreSQL address in the Render dashboard; it is never stored in git
+      # Instead of pasting an address you can let Render create a database (see the block at the bottom)
+      # and replace the DATABASE_URL entry above with:
+      #   - key: DATABASE_URL
+      #     fromDatabase:
+      #       name: miutm-db
+      #       property: connectionString
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false        # you type it in the Render dashboard; it is never stored in git
+      - key: DEMO_MODE
+        value: "1"
+      - key: SESSION_DAYS
+        value: "90"
+      # Optional: require this code on the Admin register form
+      - key: STAFF_SIGNUP_CODE
+        sync: false
+      # Optional email (see README). Leave these out to run without email.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+# A database created by this blueprint. "free" lasts 30 days; use "basic-256mb" or larger to keep it.
+# databases:
+#   - name: miutm-db
+#     plan: free
+#     databaseName: miutm
+#     user: miutm

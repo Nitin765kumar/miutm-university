@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, field, csrf, badge %}
+{% block title %}Track your application{% endblock %}
+{% block description %}Check the status of your {{ site.short }} application with your application number and date of birth.{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-gate">
+  <div class="wrap">
+    <h1>Track your application</h1>
+    <p>Enter your application number and date of birth to see where you are.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap split">
+    <div>
+      {% if error %}<div class="alert alert--danger" role="alert">{{ icon('alert') }}<span>{{ error }}</span></div>{% endif %}
+      <form class="form panel" method="post" action="{{ url_for('track') }}">
+        {{ csrf() }}
+        {{ field('application_no', 'Application number', form, {}, placeholder='MIUTM-2026-123456', autocomplete='off', maxlength='24', hint='You received this when you submitted your application.') }}
+        {{ field('dob', 'Date of birth', {}, {}, type='date') }}
+        <div><button class="btn btn--navy" type="submit" data-once>Check status</button></div>
+      </form>
+    </div>
+
+    {% if record %}
+    <div class="panel" aria-live="polite">
+      <p class="muted mb-0">Application {{ record.application_no }}</p>
+      <h2>{{ record.full_name }}</h2>
+      <p>{{ record.course_name }}<br><span class="muted">Submitted {{ record.created_at|ist }}</span></p>
+      <p>{{ badge(record.status) }}</p>
+      <p>{{ status_help.get(record.status, '') }}</p>
+      <h3 class="mt-lg">History</h3>
+      <ol class="timeline">
+        {% for e in events|reverse %}
+        <li>
+          <time>{{ e.created_at|ist }}</time>
+          <strong>{{ e.status }}</strong>
+          {% if e.note %}<p>{{ e.note }}</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% else %}
+    <div class="callout">
+      <p><strong>Cannot find your number?</strong></p>
+      <p>Every application you make is listed in your <a href="{{ url_for('student.dashboard') }}">student dashboard</a>. If it is not there, <a href="{{ url_for('contact') }}">contact the admissions office</a> with your name and date of birth.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

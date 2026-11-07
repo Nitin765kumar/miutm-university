@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon, badge, csrf %}
+{% block title %}My dashboard{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-students"><div class="wrap"><h1>Hello, {{ me.full_name.split()[0] }}</h1><p>Your applications, payments, documents and next steps in one place.</p></div></section>
+<section class="section"><div class="wrap">
+  {% include "student/_tabs.html" %}
+  {% if verify_needed %}
+  <div class="alert alert--warn">{{ icon('alert') }}<span>Please confirm your email address. You cannot submit or pay until you do.
+    <form class="inline-form" method="post" action="{{ url_for('student.resend_verification') }}">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Send the link again</button></form></span></div>
+  {% endif %}
+
+  {% if primary %}
+  <div class="summary" aria-label="Summary of your latest application">
+    <div class="sum-card"><span>Application number</span><strong>{{ primary.application_no }}</strong></div>
+    <div class="sum-card"><span>Programme</span><strong>{{ primary.course_code }}</strong></div>
+    <div class="sum-card"><span>Application status</span><strong>{{ badge(primary.status) }}</strong></div>
+    <div class="sum-card"><span>Payment</span><strong>{{ primary.payment_status }}</strong></div>
+    {% set pg = progress[primary.id] %}
+    <div class="sum-card"><span>Documents</span><strong>{{ pg.verified }} / {{ pg.need }} verified</strong></div>
+    <div class="sum-card"><span>Admission</span><strong>{{ 'Confirmed' if primary.status == 'Admission Confirmed' else 'Approved' if primary.status == 'Approved' else 'Selected' if primary.status in ('Selected', 'Admission Fee Pending') else 'Waitlisted' if primary.status == 'Waitlisted' else 'Closed' if primary.status in ('Rejected', 'Cancelled') else 'Not decided yet' }}</strong></div>
+  </div>
+  <div class="panel mt-md">
+    <h2>Your application journey</h2>
+    {% include "student/_timeline.html" %}
+    <p class="appcard-next mb-0"><strong>Next:</strong> {{ status_next.get(primary.status, '') }}</p>
+  </div>
+  {% endif %}
+
+  <div class="dash mt-lg">
+    <div>
+      <div class="dash-head">
+        <h2>My applications</h2>
+        {% if adm_state == 'open' and not draft %}<a class="btn btn--gold btn--sm" href="{{ url_for('apply') }}">New application</a>{% endif %}
+      </div>
+      {% if draft %}
+      <article class="draft-card">
+        <h3>Application in progress{% if draft.course %}: {{ draft.course }}{% endif %}</h3>
+        <p class="mb-0 small">Saved {{ draft.updated|ist }} &middot; {{ draft.files }} document{{ '' if draft.files == 1 else 's' }} saved. Not submitted yet.</p>
+        <div class="btn-row mt-md">
+          <a class="btn btn--gold btn--sm" href="{{ url_for('apply') }}">Continue application</a>
+          <form method="post" action="{{ url_for('apply_discard') }}" data-confirm="Discard this draft and its saved documents?">{{ csrf() }}<button class="btn btn--ghost btn--sm" type="submit">Discard draft</button></form>
+        </div>
+      </article>
+      {% endif %}
+      {% for a in apps %}
+      <article class="appcard">
+        <div class="appcard-top">
+          <div><h3><a href="{{ url_for('student.application', application_no=a.application_no) }}">{{ a.course_name }}</a></h3>
+            <p class="muted mb-0">{{ a.application_no }} &middot; {{ a.session or '' }} &middot; created {{ a.created_at|dmy }}</p></div>
+          {{ badge(a.status) }}
+        </div>
+        <p class="appcard-next">{{ status_next.get(a.status, '') }}</p>
+        {% set p = progress[a.id] %}
+        <p class="small muted">Documents: {{ p.uploaded }} of {{ p.need }} uploaded, {{ p.verified }} verified{% if p.rejected %}, <strong>{{ p.rejected }} need attention</strong>{% endif %}</p>
+        <meter min="0" max="{{ [p.need, 1]|max }}" value="{{ p.uploaded }}" aria-label="Documents uploaded"></meter>
+        <div class="btn-row appcard-actions">
+          <a class="btn btn--navy btn--sm" href="{{ url_for('student.application', application_no=a.application_no) }}">Open</a>
+          <a class="btn btn--ghost btn--sm" href="{{ url_for('student.application_receipt', application_no=a.application_no) }}">{{ icon('download') }}Receipt PDF</a>
+          {% if a.status in ('Approved', 'Admission Confirmed') %}<a class="btn btn--gold btn--sm" href="{{ url_for('student.admission_letter', application_no=a.application_no) }}">{{ icon('download') }}Admission letter</a>{% endif %}
+        </div>
+      </article>
+      {% else %}
+      {% if not draft %}<div class="panel"><h3>No applications yet</h3>
+        <p>{% if adm_state == 'open' %}Start your first application. Your details will be filled in for you next time.{% else %}Applications are not open right now.{% endif %}</p>
+        <div class="btn-row">{% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}<a class="btn btn--ghost" href="{{ url_for('student.claim') }}">I applied earlier without an account</a></div></div>{% endif %}
+      {% endfor %}
+
+      <h2 class="mt-lg">Payment history</h2>
+      {% if payments %}
+      <div class="table-scroll"><table class="syl">
+        <thead><tr><th>Date</th><th>Purpose</th><th>Amount</th><th>Status</th><th>Receipt</th></tr></thead>
+        <tbody>{% for p in payments %}<tr>
+          <td>{{ p.created_at|dmy }}</td><td>{{ p.purpose }}<br><small class="muted">{{ p.application_no }}</small></td><td>{{ p.amount|inr }}</td>
+          <td><span class="badge badge--{{ 'approved' if p.status == 'Successful' else 'rejected' if p.status == 'Failed' else 'cancelled' if p.status in ('Cancelled', 'Refunded') else 'pending' }}">{{ 'Paid' if p.status == 'Successful' else p.status }}</span></td>
+          <td>{% if p.status in ('Successful', 'Refunded') %}<a href="{{ url_for('student.payment_receipt', order_id=p.order_id) }}">PDF</a>{% else %}<a href="{{ url_for('student.payment', order_id=p.order_id) }}">{{ 'Try again' if p.status == 'Failed' else 'Pay now' }}</a>{% endif %}</td></tr>{% endfor %}</tbody>
+      </table></div>
+      {% else %}<p class="muted">No payments yet.</p>{% endif %}
+    </div>
+    <aside>
+      <div class="panel panel--paper">
+        <div class="card-head"><h2>Notifications</h2>{% if unread_notifications %}<span class="count-pill">{{ unread_notifications }}</span>{% endif %}</div>
+        {% if unread %}<ul class="rows">{% for n in unread %}<li><strong>{{ n.title }}</strong><span>{{ n.body[:90] }}</span></li>{% endfor %}</ul>
+        {% else %}<p class="muted">You are up to date.</p>{% endif %}
+        <p class="mb-0"><a href="{{ url_for('student.notifications') }}">All notifications</a></p>
+      </div>
+      <div class="panel panel--paper mt-md">
+        <h2>Notices</h2>
+        <ul class="rows">{% for n in notices %}<li><strong>{{ n.title }}</strong><span>{{ n.published_on|dmy }}</span></li>{% else %}<li><span>No notices.</span></li>{% endfor %}</ul>
+        <p class="mb-0"><a href="{{ url_for('news') }}">All news and events</a></p>
+      </div>
+      <div class="panel panel--paper mt-md">
+        <h2>Need help?</h2>
+        <p>Questions about admission, fees or a problem with the site?</p>
+        <p class="mb-0"><a href="{{ url_for('support') }}">Open a help ticket</a> &middot; <a href="{{ url_for('refund_policy') }}">Refund policy</a></p>
+      </div>
+    </aside>
+  </div>
+</div></section>
+{% endblock %}

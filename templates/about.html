@@ -1,0 +1,279 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}About the university{% endblock %}
+{% block description %}About {{ site.name }}: who we are, our mission and vision, schools and programmes, admission principles, campus, research, student support and leadership.{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-aerial">
+  <div class="wrap">
+    <h1>About {{ site.short }}</h1>
+    <p>{{ about.ABOUT_LEDE }}</p>
+  </div>
+</section>
+
+<div class="wrap">
+  <ul class="facts-strip" aria-label="MIUTM at a glance">
+    <li><strong>2026</strong><span>Established</span></li>
+    <li><strong>Ayodhya</strong><span>Uttar Pradesh</span></li>
+    <li><strong>{{ stats.schools }}</strong><span>Schools</span></li>
+    <li><strong>{{ stats.programmes }}</strong><span>Programmes</span></li>
+    <li><strong>{{ stats.seats }}</strong><span>Seats across programmes</span></li>
+  </ul>
+</div>
+
+<nav class="jump" aria-label="On this page">
+  <div class="wrap"><ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#vision">Vision and mission</a></li>
+    <li><a href="#academics">Academics</a></li>
+    <li><a href="#admissions">Admissions</a></li>
+    <li><a href="#campus">Campus</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#student-life">Student life</a></li>
+    <li><a href="#leadership">Leadership</a></li>
+    <li><a href="#policies">Policies</a></li>
+  </ul></div>
+</nav>
+
+<section class="section" id="overview" aria-labelledby="overview-title">
+  <div class="wrap split">
+    <div class="prose">
+      <p class="eyebrow">Overview</p>
+      <h2 id="overview-title">A university built for practical technology and management education</h2>
+      <p>{{ site.name }} was established in 2026 in Ayodhya. It is organised into {{ stats.schools }} schools that together offer {{ stats.programmes }} programmes, from six-month certificates to four-year engineering degrees and two-year postgraduate degrees.</p>
+      {% for para in about.PURPOSE %}<p>{{ para }}</p>{% endfor %}
+      <h3>Why Ayodhya</h3>
+      <p>{{ about.WHY_AYODHYA }}</p>
+    </div>
+    <div>
+      <img class="split-img split-img--short" src="{{ asset('img/students.webp') }}" width="1200" height="800" loading="lazy" alt="Students talking on the steps of the main building">
+      <table class="facts-table mt-md">
+        <tbody>
+          <tr><th scope="row">Full name</th><td>{{ site.name }}</td></tr>
+          <tr><th scope="row">Established</th><td>2026</td></tr>
+          <tr><th scope="row">Location</th><td>{{ site.address|join(', ') }}</td></tr>
+          <tr><th scope="row">Schools</th><td>{{ stats.schools }}</td></tr>
+          <tr><th scope="row">Programmes</th><td>{{ stats.programmes }} across {{ levels|length }} levels</td></tr>
+          <tr><th scope="row">Admission session</th><td>{{ cycle.session }}</td></tr>
+          <tr><th scope="row">Contact</th><td>{{ site.phone }}<br>{{ site.general_email }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="section section--paper" id="vision" aria-labelledby="vision-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Vision and mission</p>
+      <h2 id="vision-title">What we are here to do</h2>
+    </div>
+    <div class="mv">
+      <div class="mv-card mv-card--mission on-dark"><p class="eyebrow">Our mission</p><p class="mv-text">{{ about.MISSION }}</p></div>
+      <div class="mv-card mv-card--vision"><p class="eyebrow">Our vision</p><p class="mv-text">{{ about.VISION }}</p></div>
+    </div>
+    <div class="section-head mt-lg">
+      <h3>Our goals</h3>
+      <p>Six commitments behind the curriculum. If we are not doing them, tell us.</p>
+    </div>
+    <ol class="goals">
+      {% for title, text in about.GOALS %}<li><h3>{{ title }}</h3><p>{{ text }}</p></li>{% endfor %}
+    </ol>
+    <div class="section-head mt-lg"><h3>Our values</h3></div>
+    <div class="values values--3x2">
+      {% for title, text in about.VALUES %}<div><h3>{{ title }}</h3><p>{{ text }}</p></div>{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="academics" aria-labelledby="academics-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Academics</p>
+      <h2 id="academics-title">How study is organised</h2>
+      <p>Four levels of study across five schools. Students begin at the level that fits where they are now.</p>
+    </div>
+    <ul class="rows rows--wide">
+      {% for level, items in levels.items() %}
+      <li>
+        <strong>{{ level }}</strong>
+        <span>{{ about.LEVEL_INFO.get(level, '') }}</span>
+        <span>{% for c in items %}<a href="{{ url_for('programme_detail', slug=c.slug) }}">{{ c.name }}</a> ({{ c.duration }}){% if not loop.last %}<br>{% endif %}{% endfor %}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <h3 class="mt-lg">How teaching works</h3>
+    <ol class="steps">
+      {% for title, text in about.LEARNING_MODEL %}<li><h3>{{ title }}</h3><p>{{ text }}</p></li>{% endfor %}
+    </ol>
+
+    <h3 class="mt-lg">Academic approach</h3>
+    <ul class="rows">
+      {% for title, text in about.ACADEMIC_FRAMEWORK %}<li><strong>{{ title }}</strong><span>{{ text }}</span></li>{% endfor %}
+    </ul>
+
+    <h3 class="mt-lg">The five schools</h3>
+    <div class="schools">
+      {% for school, items in schools.items() %}
+      <div class="school">
+        <div><h3>{{ school }}</h3><p class="school-meta">{{ about.SCHOOL_BLURBS.get(school, '') }}</p></div>
+        <ul>{% for c in items %}<li><a href="{{ url_for('programme_detail', slug=c.slug) }}"><span>{{ c.name }}</span><small>{{ c.duration }}</small></a></li>{% endfor %}</ul>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--paper" id="admissions" aria-labelledby="admissions-title">
+  <div class="wrap split split--even">
+    <div>
+      <p class="eyebrow">Admissions</p>
+      <h2 id="admissions-title">A clear, fair way in</h2>
+      <p class="lead">Admission is the first thing a student experiences of a university, so we have made it plain and open.</p>
+      <p class="muted">Applications for {{ cycle.session }} are {{ 'open' if adm_state == 'open' else 'not open at the moment' }}. Dates and eligibility are in the admission guide.</p>
+      <div class="btn-row">
+        {% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}
+        <a class="btn btn--navy" href="{{ url_for('admission') }}">Admission guide</a>
+        <a class="btn btn--ghost" href="{{ url_for('scholarships') }}">Scholarships</a>
+      </div>
+    </div>
+    <ul class="rows">
+      {% for title, text in about.ADMISSION_PRINCIPLES %}<li><strong>{{ title }}</strong><span>{{ text }}</span></li>{% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="campus" aria-labelledby="campus-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Campus</p>
+      <h2 id="campus-title">A campus built for working, not just attending</h2>
+      <p>Learning spaces are open long hours, and everything students need day to day is within walking distance.</p>
+    </div>
+    <ul class="fac">
+      {% for title, img, text in about.FACILITIES %}
+      <li><img src="{{ asset(img) }}" width="1000" height="666" loading="lazy" alt="{{ title }}"><h3>{{ title }}</h3><p>{{ text }}</p></li>
+      {% endfor %}
+    </ul>
+    <p class="fine">Images are illustrative renders of the planned campus.</p>
+  </div>
+</section>
+
+<section class="section section--paper" id="research" aria-labelledby="research-title">
+  <div class="wrap split split--even">
+    <div>
+      <p class="eyebrow">Research and innovation</p>
+      <h2 id="research-title">Applied research with local impact</h2>
+      <p class="lead">Research here starts from real problems: a school that needs a timetable tool, a shop that needs better stock records, a service that needs to be safer.</p>
+      <p class="muted">Students join faculty projects from their second year. Enquiries go to the <a href="{{ url_for('contact') }}">Research Centre</a>.</p>
+    </div>
+    <ul class="rows">{% for title, text in about.RESEARCH_AREAS %}<li><strong>{{ title }}</strong><span>{{ text }}</span></li>{% endfor %}</ul>
+  </div>
+</section>
+
+<section class="section" id="student-life" aria-labelledby="support-title">
+  <div class="wrap split split--even">
+    <div>
+      <p class="eyebrow">Student life and support</p>
+      <h2 id="support-title">Help that is there when you need it</h2>
+      <p class="lead">Admission is the start of the relationship, not the end of it. These services are part of every student's first day.</p>
+      <div class="btn-row">
+        <a class="btn btn--navy" href="{{ url_for('support') }}">Help and grievances</a>
+        <a class="btn btn--ghost" href="{{ url_for('news') }}">News and events</a>
+      </div>
+    </div>
+    <ul class="rows">{% for title, text in about.SUPPORT %}<li><strong>{{ title }}</strong><span>{{ text }}</span></li>{% endfor %}</ul>
+  </div>
+</section>
+
+<section class="section section--paper" aria-labelledby="journey-title">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">Our journey</p><h2 id="journey-title">Where we are and where we are going</h2></div>
+    <ol class="dates dates--4">
+      {% for when, text, state in about.JOURNEY %}
+      <li data-state="{{ state }}">{% if state == 'next' %}<span class="d-tag">Next</span>{% endif %}<time>{{ when }}</time><span class="d-note">{{ text }}</span></li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="leadership" aria-labelledby="founder-title">
+  <div class="wrap founder">
+    <img src="{{ asset(about.FOUNDER_MESSAGE.photo) }}" width="480" height="480" loading="lazy" alt="Portrait of {{ about.FOUNDER_MESSAGE.name }}">
+    <figure>
+      <p class="eyebrow" id="founder-title">A word from the founder</p>
+      <blockquote>{{ about.FOUNDER_MESSAGE.text }}</blockquote>
+      <figcaption><strong>{{ about.FOUNDER_MESSAGE.name }}</strong><br>{{ about.FOUNDER_MESSAGE.role }}</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="section section--paper" aria-labelledby="people-title">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Leadership</p>
+      <h2 id="people-title">Who runs the university</h2>
+      <p>{{ about.GOVERNANCE }}</p>
+    </div>
+    <ul class="people">
+      {% for p in team %}
+      <li class="person">
+        <img src="{{ asset(p.photo) }}" width="480" height="480" loading="lazy" alt="Portrait of {{ p.name }}">
+        <h3>{{ p.name }}</h3><p class="role">{{ p.role }}</p><p>{{ p.bio }}</p>
+        {% for label, url in (p.links or {}).items() %}<a href="{{ url }}" rel="noopener" target="_blank">{{ label }}</a>{% if not loop.last %} &middot; {% endif %}{% endfor %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% if faculty %}
+    <h3 class="mt-lg">Senior faculty</h3>
+    <ul class="faculty">
+      {% for f in faculty %}
+      <li><div><span class="n">{{ f.name }}</span><br><span class="d">{{ f.designation }}</span></div><div class="d">{{ f.school }}</div><div class="d">{{ f.specialization }}</div></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <h3 class="mt-lg">Who to contact for what</h3>
+    <ul class="offices">
+      {% for d in departments %}<li><strong>{{ d.key }}</strong><span>{{ d.about }}</span> <a href="mailto:{{ d.email }}">{{ d.email }}</a></li>{% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="policies" aria-labelledby="policies-title">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">Policies</p><h2 id="policies-title">How we treat people</h2></div>
+    <ul class="rows rows--wide">
+      <li><strong>Privacy</strong><span>What we collect, why, and who can see it.</span><a href="{{ url_for('privacy') }}">Privacy policy</a></li>
+      <li><strong>Grievances and anti-ragging</strong><span>Zero tolerance for ragging or harassment. Every report gets a ticket number and an answer.</span><a href="{{ url_for('support') }}">Help and grievances</a></li>
+      <li><strong>Accessibility</strong><span>Keyboard-friendly pages, clear labels and readable text.</span><a href="{{ url_for('accessibility') }}">Accessibility statement</a></li>
+      <li><strong>Terms of use</strong><span>The rules for using this website and applying.</span><a href="{{ url_for('terms') }}">Terms</a></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section section--paper" id="about-project">
+  <div class="wrap">
+    <div class="prose">
+      <h2>About this website</h2>
+      <div class="callout">
+        <p><strong>{{ site.demo_notice }}</strong></p>
+        <p>{{ site.project_credit }}</p>
+        <p>A real institution would publish its regulatory approvals and registration details here. {{ site.short }} holds none, so none are claimed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta on-dark" aria-labelledby="cta-title">
+  <div class="wrap">
+    <div><h2 id="cta-title">See it for yourself</h2><p>Browse the programmes, read the admission guide, or write to us with your questions.</p></div>
+    <div class="btn-row">
+      {% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply') }}">Apply now</a>{% endif %}
+      <a class="btn btn--line" href="{{ url_for('programmes') }}">Browse programmes</a>
+      <a class="btn btn--line" href="{{ url_for('contact') }}">Contact us</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

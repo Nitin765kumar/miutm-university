@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+{% from "partials/_macros.html" import icon, csrf %}
+{% block title %}{{ t.ticket_no }}{% endblock %}
+{% block content %}
+<div class="admin-top"><div><h1>{{ t.subject }}</h1><p>{{ t.ticket_no }} &middot; {{ t.category }} &middot; {{ t.created_at|ist }}</p></div><a class="btn btn--ghost btn--sm" href="{{ url_for('admin.tickets') }}">Back to list</a></div>
+<div class="cols">
+  <section class="card">
+    <h2>Message</h2>
+    <p class="meta">{{ t.name }} &middot; <a href="mailto:{{ t.email }}">{{ t.email }}</a>{% if t.phone %} &middot; {{ t.phone }}{% endif %}</p>
+    <div class="msg-body">{{ t.message }}</div>
+  </section>
+  <section class="card">
+    <h2>Answer</h2>
+    <form class="form" method="post" action="{{ url_for('admin.ticket', ticket_id=t.id) }}">
+      {{ csrf() }}
+      <div class="field"><label for="status">Status</label>
+        <select class="select" id="status" name="status">{% for s in statuses %}<option {% if s == t.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+      <div class="field"><label for="response">Answer shown to the person</label>
+        <textarea class="textarea" id="response" name="response" rows="6" maxlength="3000">{{ t.response or '' }}</textarea>
+        <p class="hint">They see this on the ticket page{% if email_on %} and in an email{% endif %}.</p></div>
+      <div><button class="btn btn--navy" type="submit" data-once>Save</button></div>
+    </form>
+  </section>
+</div>
+{% endblock %}

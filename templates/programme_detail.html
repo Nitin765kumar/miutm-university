@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}{{ course.name }}{% endblock %}
+{% block description %}{{ course.name }} at {{ site.short }}: {{ course.duration }}, {{ course.fee|inr }} {{ course.fee_period }}, {{ course.seats }} seats, {{ credits }} credits. {{ course.summary }}{% endblock %}
+
+{% block content %}
+<section class="page-head bgfx bg-lab">
+  <div class="wrap">
+    <ol class="crumbs">
+      <li><a href="{{ url_for('programmes') }}">Programmes</a></li>
+      <li aria-current="page">{{ course.code }}</li>
+    </ol>
+    <h1>{{ course.name }}</h1>
+    <p>{{ course.summary }}</p>
+    <div class="btn-row mt-md">
+      {% if adm_state == 'open' %}<a class="btn btn--gold" href="{{ url_for('apply', course=course.slug) }}">Apply now {{ icon('arrow') }}</a>{% endif %}
+      <a class="btn btn--navy" href="{{ url_for('syllabus', slug=course.slug) }}">View syllabus</a>
+      <a class="btn btn--line" href="{{ url_for('syllabus_pdf', slug=course.slug) }}">{{ icon('download') }}Download syllabus PDF</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap detail">
+    <div>
+      <h2>Programme overview</h2>
+      <p>{{ course.overview or course.summary }}</p>
+
+      <h2>What you will study</h2>
+      <ul class="topics">{% for t in topics %}<li>{{ icon('check') }}<span>{{ t }}</span></li>{% endfor %}</ul>
+
+      <h2>Eligibility</h2>
+      <p>{{ course.eligibility }}</p>
+      <p class="muted">The application form checks your qualification and marks against these rules before you can continue.</p>
+
+      <h2>Admission process</h2>
+      <ol class="steps steps--compact">
+        <li><h3>Apply online</h3><p>Create an account and fill in the five-step form.</p></li>
+        <li><h3>Pay the application fee</h3><p>{{ app_fee|inr if app_fee else 'No application fee' }}. Your application is submitted once it is paid.</p></li>
+        <li><h3>Merit and selection</h3><p>Applicants are ranked by marks. Selected applicants are told on their dashboard.</p></li>
+        <li><h3>Admission fee and approval</h3><p>{{ (course.admission_fee|inr ~ ' secures the seat') if course.admission_fee else 'No separate admission fee' }}. Then counselling confirms your admission.</p></li>
+      </ol>
+
+      <h2>Fee structure</h2>
+      <div class="table-scroll"><table class="facts-table">
+        <tbody>
+          <tr><th scope="row">Programme fee</th><td>{{ course.fee|inr }} {{ course.fee_period }}</td></tr>
+          <tr><th scope="row">Admission fee</th><td>{{ course.admission_fee|inr if course.admission_fee else 'None' }}</td></tr>
+          <tr><th scope="row">Application fee</th><td>{{ app_fee|inr if app_fee else 'None' }}, paid once per application</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted"><a href="{{ url_for('fees') }}">Full fee structure</a> &middot; <a href="{{ url_for('refund_policy') }}">Refund and cancellation policy</a> &middot; <a href="{{ url_for('scholarships') }}">Scholarships</a></p>
+
+      {% if careers %}<h2>Career opportunities</h2><ul class="topics">{% for c in careers %}<li>{{ icon('check') }}<span>{{ c }}</span></li>{% endfor %}</ul>{% endif %}
+      {% if outcomes %}<h2>Programme outcomes</h2><p class="muted">By the end of the programme you will be able to:</p><ul class="topics topics--one">{% for o in outcomes %}<li>{{ icon('check') }}<span>{{ o }}</span></li>{% endfor %}</ul>{% endif %}
+
+      <h2>Documents required</h2>
+      <p>Upload these when you apply (PDF, JPG or PNG, up to 2 MB each):</p>
+      <ul>
+        {% for d in docs_base %}<li>{{ d }}</li>{% endfor %}
+        <li>Degree or diploma marksheet, if you hold a diploma or degree</li>
+        <li>Category certificate, if you claim a reserved category</li>
+      </ul>
+      <p class="muted">Originals are checked in person at counselling. <a href="{{ url_for('documents_required') }}">More about documents</a>.</p>
+
+      <h2 id="syllabus">Syllabus</h2>
+      <p>{{ credits }} credits in total across {{ semesters|length }} {{ 'semester' if semesters|length == 1 else 'semesters' }}.
+        <a href="{{ url_for('syllabus', slug=course.slug) }}">Open the detailed syllabus with every unit</a> or
+        <a href="{{ url_for('syllabus_pdf', slug=course.slug) }}">download it as a PDF</a>.</p>
+      {% for sem, subjects in semesters.items() %}
+      <details class="sem" {% if loop.first %}open{% endif %}>
+        <summary>{{ ('Semester ' ~ sem) if semesters|length > 1 else 'Modules' }} <span class="muted">({{ subjects|sum(attribute='credits') }} credits)</span></summary>
+        <div class="table-scroll"><table class="syl">
+          <thead><tr><th>Code</th><th>Subject</th><th>Credits</th><th>Type</th></tr></thead>
+          <tbody>{% for s in subjects %}<tr><td>{{ s.code }}</td><td>{{ s.name }}</td><td>{{ s.credits }}</td><td>{{ s.kind }}</td></tr>{% endfor %}</tbody>
+        </table></div>
+      </details>
+      {% endfor %}
+
+      {% if related %}
+      <h2 class="mt-lg">Also in {{ course.school }}</h2>
+      <ul>{% for r in related %}<li><a href="{{ url_for('programme_detail', slug=r.slug) }}">{{ r.name }}</a> ({{ r.duration }})</li>{% endfor %}</ul>
+      {% endif %}
+    </div>
+
+    <aside class="facts" aria-label="Programme facts">
+      <p class="big mb-0">{{ course.fee|inr }}</p>
+      <p class="muted">{{ course.fee_period }}</p>
+      <dl>
+        <div><dt>Duration</dt><dd>{{ course.duration }}</dd></div>
+        <div><dt>Level</dt><dd>{{ course.level }}</dd></div>
+        <div><dt>School</dt><dd>{{ course.school }}</dd></div>
+        <div><dt>Seats</dt><dd>{{ course.seats }}</dd></div>
+        <div><dt>Total credits</dt><dd>{{ credits }}</dd></div>
+        {% if course.min_percent %}<div><dt>Minimum marks</dt><dd>{{ course.min_percent }}%</dd></div>{% endif %}
+      </dl>
+      {% if adm_state == 'open' %}
+        <a class="btn btn--gold" href="{{ url_for('apply', course=course.slug) }}">Apply now</a>
+      {% else %}
+        <a class="btn btn--line" href="{{ url_for('admission') }}">See admission dates</a>
+      {% endif %}
+      <p class="mt-md mb-0"><a class="btn btn--ghost btn--sm" href="{{ url_for('syllabus_pdf', slug=course.slug) }}">{{ icon('download') }}Syllabus PDF</a></p>
+    </aside>
+  </div>
+</section>
+{% endblock %}

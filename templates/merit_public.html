@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "partials/_macros.html" import icon %}
+{% block title %}Merit lists{% endblock %}
+{% block description %}Published merit lists for the {{ session_label }} session at {{ site.short }}. Search by application number.{% endblock %}
+{% block content %}
+<section class="page-head bgfx bg-gate"><div class="wrap"><h1>Merit lists {{ session_label }}</h1><p>Search by application number. Names and marks are not shown here.</p></div></section>
+<section class="section"><div class="wrap">
+  {% if not published %}<p class="muted">No merit list has been published yet. They appear here, and in your dashboard, when the admission office publishes them.</p>
+  {% else %}
+  <form class="filters" method="get" action="{{ url_for('merit_list_public') }}">
+    <div class="field"><label for="course">Programme</label>
+      <select class="select" id="course" name="course"><option value="">Choose a programme</option>{% for p in published %}<option value="{{ p.course_code }}" {% if chosen and chosen.course_code == p.course_code %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="q">Application number <span class="opt">(optional)</span></label><input class="input" id="q" name="q" value="{{ q }}" placeholder="MIUTM-2026-123456" maxlength="24"></div>
+    <div><button class="btn btn--navy" type="submit">{{ icon('search') }}Show</button></div>
+  </form>
+  {% if chosen %}
+    <p class="muted mt-md">Published {{ chosen.published_at|ist }}.</p>
+    {% if rows %}<div class="table-scroll"><table class="syl"><thead><tr><th>Rank</th><th>Application number</th><th>Status</th></tr></thead>
+      <tbody>{% for r in rows %}<tr><td>{{ r.merit_rank }}</td><td>{{ r.application_no }}</td><td>{{ r.status }}</td></tr>{% endfor %}</tbody></table></div>
+    {% else %}<p>No result for that application number in this list.</p>{% endif %}
+  {% endif %}
+  {% endif %}
+</div></section>
+{% endblock %}
